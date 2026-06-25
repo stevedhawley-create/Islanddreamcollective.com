@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contact — Island Dream Collective | Bali Villa Management</title>
+  <meta name="description" content="Get in touch with Island Dream Collective. Talk to Steve and Tara about managing your Bali villa." />
+  <link rel="canonical" href="https://www.islanddreamcollective.com/contact.html" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .contact-grid { display:grid; grid-template-columns:1fr 1.4fr; gap:60px; align-items:start; }
+    .contact-details { display:flex; flex-direction:column; gap:24px; }
+    .contact-card { background:#fff; border-radius:12px; padding:24px; border:1px solid #e8e2d9; }
+    .contact-card h3 { font-size:1rem; margin-bottom:8px; }
+    .contact-card p, .contact-card a { font-size:0.95rem; color:#555; line-height:1.6; text-decoration:none; }
+    .contact-card a { color:var(--navy); font-weight:600; }
+    .contact-form { display:flex; flex-direction:column; gap:14px; }
+    .contact-form label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.8px; color:#888; display:block; margin-bottom:5px; }
+    .contact-form input, .contact-form select, .contact-form textarea {
+      width:100%; padding:13px 16px; border:1px solid #ddd; border-radius:8px;
+      font-family:inherit; font-size:0.95rem; background:#fff; color:#1C2B3A;
+      box-sizing:border-box;
+    }
+    .contact-form input:focus, .contact-form select:focus, .contact-form textarea:focus { outline:none; border-color:var(--navy); }
+    .contact-form textarea { resize:vertical; }
+    .contact-form button { width:100%; padding:14px; font-size:1rem; }
+    .form-success { display:none; background:#f0faf8; border:1px solid #2E6E68; border-radius:8px; padding:20px; color:#2E6E68; font-weight:600; text-align:center; }
+    @media(max-width:768px) { .contact-grid { grid-template-columns:1fr; gap:32px; } }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <a href="index.html" class="nav-logo">
+      <img src="https://www.balivillabookings.com/logo.png" alt="Island Dream Collective" />
+    </a>
+    <ul class="nav-links">
+      <li><a href="services.html">Services</a></li>
+      <li><a href="portfolio.html">Portfolio</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="blog.html">Blog</a></li>
+      <li><a href="contact.html">Contact</a></li>
+      <li><a href="list-your-villa.html" class="nav-cta">List Your Villa</a></li>
+    </ul>
+    <button class="nav-hamburger" id="menuToggle" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <div class="mobile-nav" id="mobileNav">
+    <a href="services.html">Services</a>
+    <a href="portfolio.html">Portfolio</a>
+    <a href="about.html">About</a>
+    <a href="blog.html">Blog</a>
+    <a href="contact.html">Contact</a>
+    <a href="list-your-villa.html" class="mobile-nav-cta">List Your Villa</a>
+  </div>
+
+  <!-- PAGE HEADER -->
+  <div style="background: var(--navy); padding: 80px 0 60px; text-align: center; color: #fff;">
+    <div class="container-narrow">
+      <p class="eyebrow" style="color: var(--gold);">Get in touch</p>
+      <h1 style="color: #fff;">Let's talk about your villa.</h1>
+      <p style="color: rgba(255,255,255,0.7); margin-top: 16px;">No hard sell, no obligation. Just a straightforward conversation.</p>
+    </div>
+  </div>
+
+  <!-- CONTACT SECTION -->
+  <section class="section section-sand">
+    <div class="container">
+      <div class="contact-grid">
+
+        <!-- LEFT: Contact details -->
+        <div class="contact-details">
+          <div class="contact-card">
+            <h3>WhatsApp</h3>
+            <p>The fastest way to reach us.</p>
+            <a href="https://wa.me/61433175444" target="_blank" style="display:inline-block;margin-top:10px;background:var(--gold);color:#fff;padding:10px 20px;border-radius:8px;font-size:14px;">Start a chat →</a>
+          </div>
+          <div class="contact-card">
+            <h3>Email</h3>
+            <a href="mailto:hello@islanddreamcollective.com">hello@islanddreamcollective.com</a>
+          </div>
+          <div class="contact-card">
+            <h3>Phone</h3>
+            <a href="tel:+61433175444">+61 433 175 444</a>
+          </div>
+          <div class="contact-card">
+            <h3>Where we operate</h3>
+            <p>Canggu &amp; Uluwatu, Bali, Indonesia.<br/>Australian-owned, Bali-based.</p>
+          </div>
+          <div class="contact-card">
+            <h3>Follow along</h3>
+            <p><a href="https://www.instagram.com/islanddreamcollective/" target="_blank">@islanddreamcollective</a></p>
+          </div>
+        </div>
+
+        <!-- RIGHT: Enquiry form -->
+        <div>
+          <p class="section-eyebrow">Send an enquiry</p>
+          <h2 class="section-title" style="margin-bottom:24px">We'll get back to you within 24 hours.</h2>
+
+          <div id="form-success" class="form-success">✓ Thanks! We'll be in touch within 24 hours.</div>
+
+          <div class="contact-form" id="contactForm">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+              <div>
+                <label>First name</label>
+                <input id="c-first" type="text" placeholder="Steve" />
+              </div>
+              <div>
+                <label>Last name</label>
+                <input id="c-last" type="text" placeholder="Hawley" />
+              </div>
+            </div>
+            <div>
+              <label>Email address</label>
+              <input id="c-email" type="email" placeholder="you@example.com" />
+            </div>
+            <div>
+              <label>Phone / WhatsApp</label>
+              <input id="c-phone" type="tel" placeholder="+61 400 000 000" />
+            </div>
+            <div>
+              <label>What can we help with?</label>
+              <select id="c-subject">
+                <option value="">Select...</option>
+                <option>I'd like to list my villa with IDC</option>
+                <option>I'm unhappy with my current manager</option>
+                <option>I'm currently self-managing</option>
+                <option>General enquiry</option>
+              </select>
+            </div>
+            <div>
+              <label>Message <span style="font-weight:400;color:#bbb">(optional)</span></label>
+              <textarea id="c-msg" rows="4" placeholder="Tell us a bit about your villa or what you're looking for..."></textarea>
+            </div>
+            <div id="c-error" style="display:none;color:#c0392b;font-size:13px"></div>
+            <button onclick="submitContact()" class="btn-gold">Send Message</button>
+            <p style="font-size:12px;color:#aaa;text-align:center">We reply within 24 hours. Prefer instant answers? <a href="https://wa.me/61433175444" target="_blank" style="color:var(--navy)">WhatsApp us.</a></p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <img src="https://www.balivillabookings.com/logo.png" alt="Island Dream Collective" />
+        <p>Boutique villa management in Canggu &amp; Uluwatu, Bali. Run by Australian professionals with real estate in their DNA.</p>
+        <p class="footer-contact">hello@islanddreamcollective.com</p>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <a href="services.html">Services</a>
+        <a href="portfolio.html">Portfolio</a>
+        <a href="about.html">About IDC</a>
+        <a href="blog.html">Blog</a>
+        <a href="contact.html">Contact</a>
+      </div>
+      <div class="footer-col">
+        <h4>Owners</h4>
+        <a href="list-your-villa.html">List Your Villa</a>
+        <a href="https://dashboard.islanddreamcollective.com" target="_blank">Owner Login</a>
+        <a href="faq.html">FAQ</a>
+      </div>
+      <div class="footer-col">
+        <h4>Guest Bookings</h4>
+        <a href="https://www.balivillabookings.com" target="_blank">balivillabookings.com ↗</a>
+        <a href="https://www.instagram.com/islanddreamcollective/" target="_blank">@islanddreamcollective</a>
+        <a href="https://wa.me/61433175444" target="_blank">WhatsApp</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>©2026 Island Dream Collective. Canggu &amp; Uluwatu, Bali, Indonesia.</span>
+      <a href="https://www.balivillabookings.com" target="_blank">balivillabookings.com</a>
+    </div>
+  </footer>
+
+  <script>
+    const toggle = document.getElementById('menuToggle');
+    const mobileNav = document.getElementById('mobileNav');
+    toggle.addEventListener('click', () => { mobileNav.classList.toggle('open'); });
+    document.addEventListener('click', (e) => {
+      if (!toggle.contains(e.target) && !mobileNav.contains(e.target)) { mobileNav.classList.remove('open'); }
+    });
+
+    async function submitContact() {
+      const first = document.getElementById('c-first').value.trim();
+      const last = document.getElementById('c-last').value.trim();
+      const email = document.getElementById('c-email').value.trim();
+      const phone = document.getElementById('c-phone').value.trim();
+      const subject = document.getElementById('c-subject').value;
+      const msg = document.getElementById('c-msg').value.trim();
+      const err = document.getElementById('c-error');
+
+      if (!first || !email || !subject) {
+        err.textContent = 'Please fill in your name, email and subject.';
+        err.style.display = 'block';
+        return;
+      }
+      err.style.display = 'none';
+
+      const res = await fetch('https://formspree.io/f/mlgkabqe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({ name: first + ' ' + last, email, phone: phone || 'Not provided', subject, message: msg || 'No message' })
+      });
+
+      if (res.ok) {
+        document.getElementById('contactForm').style.display = 'none';
+        document.getElementById('form-success').style.display = 'block';
+      } else {
+        err.textContent = 'Something went wrong — please try WhatsApp instead.';
+        err.style.display = 'block';
+      }
+    }
+  </script>
+</body>
+</html>

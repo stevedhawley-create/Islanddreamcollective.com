@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Our Portfolio — Island Dream Collective | Bali Villa Management</title>
+  <meta name="description" content="Casa de Loto in Canggu and Unite By The Sea in Uluwatu — the villas currently managed by Island Dream Collective." />
+  <link rel="canonical" href="https://www.islanddreamcollective.com/portfolio.html" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .villa-card { background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 4px 24px rgba(28,43,58,.08); margin-bottom:48px; }
+    .villa-card-img { width:100%; height:360px; object-fit:cover; }
+    .villa-card-body { padding:36px 40px; }
+    .villa-card-body .villa-location { font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:var(--gold); font-weight:700; margin-bottom:10px; }
+    .villa-card-body h2 { font-size:2rem; margin-bottom:12px; }
+    .villa-card-body p { color:#555; line-height:1.7; margin-bottom:20px; }
+    .villa-stats { display:flex; gap:32px; flex-wrap:wrap; margin:24px 0; padding:24px 0; border-top:1px solid #eee; border-bottom:1px solid #eee; }
+    .villa-stat { display:flex; flex-direction:column; gap:4px; }
+    .villa-stat span:first-child { font-size:11px; text-transform:uppercase; letter-spacing:0.1em; color:#999; }
+    .villa-stat span:last-child { font-weight:700; color:var(--navy); font-size:15px; }
+    .villa-card-actions { display:flex; gap:12px; flex-wrap:wrap; margin-top:24px; }
+    @media(max-width:600px) { .villa-card-body { padding:24px 20px; } .villa-card-img { height:240px; } }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <a href="index.html" class="nav-logo">
+      <img src="https://www.balivillabookings.com/logo.png" alt="Island Dream Collective" />
+    </a>
+    <ul class="nav-links">
+      <li><a href="services.html">Services</a></li>
+      <li><a href="portfolio.html">Portfolio</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="blog.html">Blog</a></li>
+      <li><a href="contact.html">Contact</a></li>
+      <li><a href="list-your-villa.html" class="nav-cta">List Your Villa</a></li>
+    </ul>
+    <button class="nav-hamburger" id="menuToggle" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <div class="mobile-nav" id="mobileNav">
+    <a href="services.html">Services</a>
+    <a href="portfolio.html">Portfolio</a>
+    <a href="about.html">About</a>
+    <a href="blog.html">Blog</a>
+    <a href="contact.html">Contact</a>
+    <a href="list-your-villa.html" class="mobile-nav-cta">List Your Villa</a>
+  </div>
+
+  <!-- PAGE HEADER -->
+  <div style="background: var(--navy); padding: 80px 0 60px; text-align: center; color: #fff;">
+    <div class="container-narrow">
+      <p class="eyebrow" style="color: var(--gold);">Our Portfolio</p>
+      <h1 style="color: #fff;">The villas we manage.</h1>
+      <p style="color: rgba(255,255,255,0.7); margin-top: 16px;">Deliberately boutique. Two exceptional properties in Bali's most sought-after locations.</p>
+    </div>
+  </div>
+
+  <!-- VILLAS -->
+  <section class="section section-sand">
+    <div class="container" style="max-width:860px">
+
+      <!-- CASA DE LOTO -->
+      <div class="villa-card">
+        <img src="https://l.icdbcdn.com/oh/1db682f0-ad0f-4f90-a979-878327ff59eb.jpg?w=1200" alt="Casa de Loto — Canggu" class="villa-card-img" loading="lazy" />
+        <div class="villa-card-body">
+          <div class="villa-location">Canggu, Bali</div>
+          <h2>Casa de Loto</h2>
+          <p>A design-led hideaway minutes from Canggu's beaches, cafés and nightlife. Casa de Loto blends contemporary Balinese architecture with the calm of a private tropical garden — an intimate retreat that consistently earns standout guest reviews.</p>
+          <div class="villa-stats">
+            <div class="villa-stat"><span>Bedrooms</span><span>2</span></div>
+            <div class="villa-stat"><span>Guests</span><span>Up to 4</span></div>
+            <div class="villa-stat"><span>Location</span><span>Tibubeneng, Canggu</span></div>
+            <div class="villa-stat"><span>From</span><span>Rp 2.400.000 / night</span></div>
+          </div>
+          <p>Features a private pool, fully equipped kitchen, tropical garden, daily housekeeping and seamless access to the best of Canggu — beach clubs, surf breaks, restaurants and creative studios.</p>
+          <div class="villa-card-actions">
+            <a href="https://www.balivillabookings.com/casa-de-loto.html" target="_blank" class="btn-gold">View Villa ↗</a>
+            <a href="list-your-villa.html" class="btn-navy" style="font-size:0.9rem">Manage a similar villa?</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- UNITE BY THE SEA -->
+      <div class="villa-card">
+        <img src="https://l.icdbcdn.com/oh/503624a0-1572-48ac-b039-c6a72e368c93.jpg?w=1200" alt="Unite By The Sea — Uluwatu" class="villa-card-img" loading="lazy" />
+        <div class="villa-card-body">
+          <div class="villa-location">Uluwatu, Bali</div>
+          <h2>Unite By The Sea</h2>
+          <p>Perched above the cliffs of Uluwatu, Unite By The Sea is a four-bedroom villa that commands sweeping ocean views and some of Bali's most dramatic sunsets. A property that genuinely stops guests in their tracks.</p>
+          <div class="villa-stats">
+            <div class="villa-stat"><span>Bedrooms</span><span>4</span></div>
+            <div class="villa-stat"><span>Guests</span><span>Up to 8</span></div>
+            <div class="villa-stat"><span>Location</span><span>Pecatu, Uluwatu</span></div>
+            <div class="villa-stat"><span>From</span><span>Rp 3.750.000 / night</span></div>
+          </div>
+          <p>Infinity pool with ocean views, four en-suite bedrooms, open-plan living, private staff and proximity to Uluwatu's world-class surf breaks, temples and clifftop restaurants.</p>
+          <div class="villa-card-actions">
+            <a href="https://www.balivillabookings.com/unite-by-the-sea.html" target="_blank" class="btn-gold">View Villa ↗</a>
+            <a href="list-your-villa.html" class="btn-navy" style="font-size:0.9rem">Manage a similar villa?</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <div class="cta-band">
+    <div class="container-narrow">
+      <p class="eyebrow" style="color: var(--gold); margin-bottom: 1.25rem;">Your villa could be next.</p>
+      <h2>We're selectively expanding our portfolio.</h2>
+      <p>We work with a small number of properties at any one time. If you have a villa in Canggu or Uluwatu, we'd love to hear from you.</p>
+      <a href="list-your-villa.html" class="btn-gold">Get in Touch</a>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <img src="https://www.balivillabookings.com/logo.png" alt="Island Dream Collective" />
+        <p>Boutique villa management in Canggu &amp; Uluwatu, Bali. Run by Australian professionals with real estate in their DNA.</p>
+        <p class="footer-contact">hello@islanddreamcollective.com</p>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <a href="services.html">Services</a>
+        <a href="portfolio.html">Portfolio</a>
+        <a href="about.html">About IDC</a>
+        <a href="blog.html">Blog</a>
+        <a href="contact.html">Contact</a>
+      </div>
+      <div class="footer-col">
+        <h4>Owners</h4>
+        <a href="list-your-villa.html">List Your Villa</a>
+        <a href="https://dashboard.islanddreamcollective.com" target="_blank">Owner Login</a>
+        <a href="faq.html">FAQ</a>
+      </div>
+      <div class="footer-col">
+        <h4>Guest Bookings</h4>
+        <a href="https://www.balivillabookings.com" target="_blank">balivillabookings.com ↗</a>
+        <a href="https://www.instagram.com/islanddreamcollective/" target="_blank">@islanddreamcollective</a>
+        <a href="https://wa.me/61433175444" target="_blank">WhatsApp</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>©2026 Island Dream Collective. Canggu &amp; Uluwatu, Bali, Indonesia.</span>
+      <a href="https://www.balivillabookings.com" target="_blank">balivillabookings.com</a>
+    </div>
+  </footer>
+
+  <script>
+    const toggle = document.getElementById('menuToggle');
+    const mobileNav = document.getElementById('mobileNav');
+    toggle.addEventListener('click', () => { mobileNav.classList.toggle('open'); });
+    document.addEventListener('click', (e) => {
+      if (!toggle.contains(e.target) && !mobileNav.contains(e.target)) { mobileNav.classList.remove('open'); }
+    });
+  </script>
+</body>
+</html>
