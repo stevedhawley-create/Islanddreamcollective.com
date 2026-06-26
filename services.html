@@ -152,6 +152,90 @@
     </div>
   </section>
 
+
+  <!-- EARNINGS CALCULATOR -->
+  <section class="section">
+    <div class="container" style="max-width:760px">
+      <div class="section-header">
+        <p class="section-eyebrow">Earnings Calculator</p>
+        <h2 class="section-title">What could your villa earn?</h2>
+        <p class="section-body">Adjust the sliders to get a rough estimate of what your villa could generate under IDC management — and what you'd take home after our 20% fee.</p>
+      </div>
+
+      <div style="background:#fff;border-radius:16px;padding:40px;box-shadow:0 4px 24px rgba(28,43,58,.08);margin-top:40px">
+
+        <div style="margin-bottom:28px">
+          <label style="font-size:13px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.8px;display:block;margin-bottom:8px">Nightly rate (IDR)</label>
+          <div style="display:flex;align-items:center;gap:16px">
+            <input type="range" id="calc-rate" min="1000000" max="10000000" step="100000" value="3000000"
+              oninput="calcUpdate()" style="flex:1;accent-color:#1C4F7A"/>
+            <span id="calc-rate-val" style="font-weight:700;color:#1C2B3A;font-size:1.1rem;min-width:110px;text-align:right">Rp 3.000.000</span>
+          </div>
+        </div>
+
+        <div style="margin-bottom:28px">
+          <label style="font-size:13px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.8px;display:block;margin-bottom:8px">Occupancy rate</label>
+          <div style="display:flex;align-items:center;gap:16px">
+            <input type="range" id="calc-occ" min="40" max="95" step="5" value="75"
+              oninput="calcUpdate()" style="flex:1;accent-color:#1C4F7A"/>
+            <span id="calc-occ-val" style="font-weight:700;color:#1C2B3A;font-size:1.1rem;min-width:50px;text-align:right">75%</span>
+          </div>
+        </div>
+
+        <div style="background:var(--navy,#1C2B3A);border-radius:12px;padding:28px 32px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;margin-top:8px">
+          <div style="text-align:center">
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:rgba(255,255,255,0.5);margin-bottom:8px">Gross annual revenue</div>
+            <div id="calc-gross" style="font-family:'Fraunces',serif;font-size:1.4rem;font-weight:500;color:#fff">Rp 821.250.000</div>
+          </div>
+          <div style="text-align:center;border-left:1px solid rgba(255,255,255,0.1);border-right:1px solid rgba(255,255,255,0.1)">
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:rgba(255,255,255,0.5);margin-bottom:8px">IDC fee (20%)</div>
+            <div id="calc-fee" style="font-family:'Fraunces',serif;font-size:1.4rem;font-weight:500;color:rgba(255,255,255,0.6)">Rp 164.250.000</div>
+          </div>
+          <div style="text-align:center">
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:rgba(255,255,255,0.5);margin-bottom:8px">Your annual income</div>
+            <div id="calc-owner" style="font-family:'Fraunces',serif;font-size:1.4rem;font-weight:500;color:var(--gold,#C9A96E)">Rp 657.000.000</div>
+          </div>
+        </div>
+
+        <p style="font-size:12px;color:#aaa;text-align:center;margin-top:16px">Estimate only. Actual results depend on villa, location, seasonality and market conditions. IDC targets 75–85% occupancy for managed properties.</p>
+
+        <div style="text-align:center;margin-top:24px">
+          <a href="list-your-villa.html" class="btn-gold">Get a tailored projection for your villa</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+  function calcUpdate() {
+    var rate = parseInt(document.getElementById('calc-rate').value);
+    var occ = parseInt(document.getElementById('calc-occ').value);
+    var gross = Math.round(rate * (occ/100) * 365);
+    var fee = Math.round(gross * 0.20);
+    var owner = gross - fee;
+    function fmt(n) {
+      return 'Rp ' + n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    }
+    document.getElementById('calc-rate-val').textContent = fmt(rate);
+    document.getElementById('calc-occ-val').textContent = occ + '%';
+    document.getElementById('calc-gross').textContent = fmt(gross);
+    document.getElementById('calc-fee').textContent = fmt(fee);
+    document.getElementById('calc-owner').textContent = fmt(owner);
+  }
+  calcUpdate();
+  </script>
+
+
+  <!-- FEE CALLOUT -->
+  <section class="section section-sand">
+    <div class="container-narrow" style="text-align:center">
+      <p class="section-eyebrow">Our fee</p>
+      <h2 class="section-title">Simple, transparent pricing.</h2>
+      <p class="section-body">We charge a flat <strong>20% management fee</strong> on gross revenue. No setup costs, no hidden fees, no surprises. We only make money when your villa makes money.</p>
+      <a href="list-your-villa.html" class="btn-gold" style="margin-top:24px;display:inline-block">See what your villa could earn →</a>
+    </div>
+  </section>
+
   <!-- CTA -->
   <div class="cta-band">
     <div class="container-narrow">
