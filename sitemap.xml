@@ -1,58 +1,60 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
   <url>
     <loc>https://www.islanddreamcollective.com/</loc>
-    <changefreq>weekly</changefreq>
+    <lastmod>2026-06-29</lastmod>
+    <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
+
   <url>
-    <loc>https://www.islanddreamcollective.com/services.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://www.islanddreamcollective.com/portfolio.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://www.islanddreamcollective.com/about.html</loc>
+    <loc>https://www.islanddreamcollective.com/about</loc>
+    <lastmod>2026-06-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
+
   <url>
-    <loc>https://www.islanddreamcollective.com/list-your-villa.html</loc>
+    <loc>https://www.islanddreamcollective.com/services</loc>
+    <lastmod>2026-06-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
+
   <url>
-    <loc>https://www.islanddreamcollective.com/faq.html</loc>
+    <loc>https://www.islanddreamcollective.com/villas</loc>
+    <lastmod>2026-06-29</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.9</priority>
   </url>
+
   <url>
-    <loc>https://www.islanddreamcollective.com/blog.html</loc>
-    <changefreq>weekly</changefreq>
+    <loc>https://www.islanddreamcollective.com/villas/casa-de-loto</loc>
+    <lastmod>2026-06-29</lastmod>
+    <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
+
   <url>
-    <loc>https://www.islanddreamcollective.com/blog-villa-revenue.html</loc>
+    <loc>https://www.islanddreamcollective.com/villas/unite-by-the-sea</loc>
+    <lastmod>2026-06-29</lastmod>
     <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.islanddreamcollective.com/list-your-villa</loc>
+    <lastmod>2026-06-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://www.islanddreamcollective.com/contact</loc>
+    <lastmod>2026-06-29</lastmod>
+    <changefreq>yearly</changefreq>
     <priority>0.7</priority>
   </url>
-  <url>
-    <loc>https://www.islanddreamcollective.com/blog-switching-management.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.islanddreamcollective.com/blog-self-managing.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.islanddreamcollective.com/contact.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
+
 </urlset>
