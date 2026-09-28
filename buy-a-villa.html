@@ -137,10 +137,10 @@
       </div>
       <div class="zc-box">
         <form id="zc-form" class="zc-row">
-          <input id="zc-input" autocomplete="off" placeholder="-8.830164, 115.132687 or a Google Maps link" aria-label="Villa location" />
+          <input id="zc-input" autocomplete="off" placeholder="Villa name, Google Maps link or coordinates" aria-label="Villa location" />
           <button type="submit" class="btn-gold" id="zc-btn">Check zoning</button>
         </form>
-        <p class="zc-hint">In Google Maps, long-press the villa's roof and copy the numbers that appear at the top. Covers Badung: Canggu, Seminyak, Kuta, Jimbaran, Uluwatu and Nusa Dua.</p>
+        <p class="zc-hint">Type the villa's name as it shows in Google Maps, paste its Share link, or long-press the roof in Google Maps and copy the numbers. Covers Badung: Canggu, Seminyak, Kuta, Jimbaran, Uluwatu and Nusa Dua.</p>
         <div id="zc-out" class="zc-result" aria-live="polite"></div>
       </div>
     </div>
@@ -384,9 +384,11 @@
         .then(function (r) { return r.json(); })
         .then(function (d) {
           if (d.error) { zcOut.innerHTML = '<p class="zc-error">' + esc(d.error) + '</p>'; return; }
-          if (!d.zone) { zcOut.innerHTML = '<p class="zc-error">' + esc(d.note || "No official zoning found for that spot.") + ' <a href="https://wa.me/61433175444?text=' + encodeURIComponent("Hi, can you check the zoning for this villa? " + q) + '" target="_blank" rel="noopener">Ask us on WhatsApp</a>.</p>'; return; }
+          // Searched by name or Share link: say which place was found.
+          var found = d.place && d.place.name ? '<p style="font-size:0.85rem;color:var(--mid);margin-bottom:10px">Found: <strong>' + esc(d.place.name) + '</strong>' + (d.place.address ? ' · ' + esc(d.place.address) : '') + '. Not the right villa? Paste its Google Maps Share link or coordinates instead.</p>' : '';
+          if (!d.zone) { zcOut.innerHTML = found + '<p class="zc-error">' + esc(d.note || "No official zoning found for that spot.") + ' <a href="https://wa.me/61433175444?text=' + encodeURIComponent("Hi, can you check the zoning for this villa? " + q) + '" target="_blank" rel="noopener">Ask us on WhatsApp</a>.</p>'; return; }
           var z = d.zone, c = COLOUR[z.colour] || COLOUR.other;
-          zcOut.innerHTML = '<span class="zc-colour zc-' + esc(z.colour) + '">' + esc(c[0]) + '</span> <span style="color:var(--mid);font-size:0.9rem">' + esc(c[1]) + '</span>'
+          zcOut.innerHTML = found + '<span class="zc-colour zc-' + esc(z.colour) + '">' + esc(c[0]) + '</span> <span style="color:var(--mid);font-size:0.9rem">' + esc(c[1]) + '</span>'
             + '<div class="zc-verdict">' + esc(PERM[z.villas] || "") + '</div>'
             + '<div class="zc-facts"><div><span>Official zone</span>' + esc(z.code) + ' · ' + esc(z.name) + '</div>'
             + '<div><span>Guest houses</span>' + esc((PERM[z.guestHouses] || "").replace("Villas ", "")) + '</div>'
