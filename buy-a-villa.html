@@ -369,7 +369,7 @@
   <script>
   (function () {
     var API = "https://app.hostopz.com/api/staff.js";
-    var COLOUR = { pink: ["Pink zone", "Tourism and commercial: villas and rentals are usually allowed."], yellow: ["Yellow zone", "Housing: living there is fine, but short-term rental is often limited."], green: ["Green zone", "Farmland or protected land: building and renting here is a red flag."], other: ["Other zone", "A special-use zone, such as public facilities."] };
+    var COLOUR = { pink: ["Pink zone", "Tourism, commercial or mixed use: villas and rentals are usually allowed."], yellow: ["Yellow zone", "Housing: living there is fine, but short-term rental is often limited."], green: ["Green zone", "Farmland or protected land: building and renting here is a red flag."], other: ["Other zone", "A special-use zone, such as public facilities."] };
     var PERM = { permitted: "Villas permitted", limited: "Villas limited", conditional: "Villas conditional", not_permitted: "Villas not permitted", unknown: "Villas not listed" };
     function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
     function track(name, params) { try { if (window.gtag) gtag("event", name, params || {}); } catch (e) {} }
