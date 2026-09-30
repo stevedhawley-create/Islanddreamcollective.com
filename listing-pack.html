@@ -47,21 +47,22 @@
       const size = [v.land_m2 ? v.land_m2 + ' m² land' : '', v.building_m2 ? v.building_m2 + ' m² building' : ''].filter(Boolean).join(' · ');
       const facts = `${v.bedrooms} bedrooms · ${v.bathrooms} bathrooms${v.pool ? ' · private pool' : ''} · ${v.furnished ? 'fully furnished' : 'unfurnished'}${size ? ' · ' + size : ''}`;
       const terms = `Minimum ${plural(v.min_months || 1, 'month')} · ${plural(v.deposit_months || 1, 'month')}' deposit · available from ${date(v.available_from)}`;
+      const rules = `No smoking inside (outdoor areas only) · ${{ yes: 'pets welcome', ask: 'pets on request, at the owner\'s discretion', no: 'no pets' }[v.pets] || 'no pets'}`;
       return [
         {
           name: 'Facebook groups and Marketplace',
           hint: 'Bali Villa/House Rentals groups, Canggu Community, Marketplace > Property for rent. Post with 5–10 photos.',
-          text: `🏡 MONTHLY RENTAL: ${v.title}\n📍 ${v.area}\n\n${rp(v.monthly_rent_idr)} per month (about ${aud(v.monthly_rent_idr)})\n\n${facts}\n\n${v.description}\n\n✅ Included: ${inc}\n➖ Not included: ${exc}\n\n📅 ${terms}\n\nManaged by Island Dream Collective, a local team on call for maintenance. Written agreement and inventory with every tenancy.\n\nWhatsApp ${WA} or see ${PAGE}`,
+          text: `🏡 MONTHLY RENTAL: ${v.title}\n📍 ${v.area}\n\n${rp(v.monthly_rent_idr)} per month (about ${aud(v.monthly_rent_idr)})\n\n${facts}\n\n${v.description}\n\n✅ Included: ${inc}\n➖ Not included: ${exc}\n\n📅 ${terms}\n🚭 ${rules}\n\nManaged by Island Dream Collective, a local team on call for maintenance. Written agreement and inventory with every tenancy.\n\nWhatsApp ${WA} or see ${PAGE}`,
         },
         {
           name: 'Flatio, Airbnb monthly and English portals',
           hint: 'Title first line, description below. Airbnb: only if the zoning allows it. Set min stay to 28+ nights.',
-          text: `${v.title}, ${v.area}: monthly rental\n\n${v.description}\n\nThe villa\n${facts}\n\nIncluded in the rent\n${inc}\n\nPaid by the tenant\n${exc}\n\nTerms\n${terms}. Rent ${rp(v.monthly_rent_idr)} per month, paid monthly in advance.\n\nManaged by Island Dream Collective, with a written tenancy agreement, a check-in inventory and a local team on call throughout your stay.`,
+          text: `${v.title}, ${v.area}: monthly rental\n\n${v.description}\n\nThe villa\n${facts}\n\nIncluded in the rent\n${inc}\n\nPaid by the tenant\n${exc}\n\nTerms\n${terms}. ${rules}. Rent ${rp(v.monthly_rent_idr)} per month, paid monthly in advance.\n\nManaged by Island Dream Collective, with a written tenancy agreement, a check-in inventory and a local team on call throughout your stay.`,
         },
         {
           name: 'Rumah123, 99.co, Lamudi, OLX (Bahasa Indonesia)',
           hint: 'Choose "Disewa", property type Villa, period "Bulanan". Paste the title into the title field.',
-          text: `Disewakan Villa ${v.bedrooms} Kamar Tidur di ${v.area}, Bulanan\n\nHarga: ${rp(v.monthly_rent_idr)} / bulan (${juta(v.monthly_rent_idr)})\n\n${v.bedrooms} kamar tidur, ${v.bathrooms} kamar mandi${v.pool ? ', kolam renang pribadi' : ''}, ${v.furnished ? 'full furnished' : 'unfurnished'}${v.land_m2 ? ', LT ' + v.land_m2 + ' m²' : ''}${v.building_m2 ? ', LB ' + v.building_m2 + ' m²' : ''}.\n\nTermasuk: ${inc}\nTidak termasuk: ${exc}\n\nMinimal sewa ${v.min_months || 1} bulan, deposit ${v.deposit_months || 1} bulan. Tersedia mulai ${tanggal(v.available_from)}.\n\nDikelola oleh PT Island Dream Collective. Hubungi WhatsApp ${WA}.`,
+          text: `Disewakan Villa ${v.bedrooms} Kamar Tidur di ${v.area}, Bulanan\n\nHarga: ${rp(v.monthly_rent_idr)} / bulan (${juta(v.monthly_rent_idr)})\n\n${v.bedrooms} kamar tidur, ${v.bathrooms} kamar mandi${v.pool ? ', kolam renang pribadi' : ''}, ${v.furnished ? 'full furnished' : 'unfurnished'}${v.land_m2 ? ', LT ' + v.land_m2 + ' m²' : ''}${v.building_m2 ? ', LB ' + v.building_m2 + ' m²' : ''}.\n\nTermasuk: ${inc}\nTidak termasuk: ${exc}\n\nMinimal sewa ${v.min_months || 1} bulan, deposit ${v.deposit_months || 1} bulan. Tersedia mulai ${tanggal(v.available_from)}. Dilarang merokok di dalam villa (boleh di area luar). ${{ yes: 'Hewan peliharaan diperbolehkan.', ask: 'Hewan peliharaan atas persetujuan pemilik.', no: 'Tidak boleh membawa hewan peliharaan.' }[v.pets] || 'Tidak boleh membawa hewan peliharaan.'}\n\nDikelola oleh PT Island Dream Collective. Hubungi WhatsApp ${WA}.`,
         },
         {
           name: 'Instagram caption',

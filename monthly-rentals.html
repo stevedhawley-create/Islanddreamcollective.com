@@ -223,6 +223,7 @@
       const rp = (n) => 'Rp ' + Number(n).toLocaleString('id-ID');
       const aud = (n) => 'A$' + (Math.round(n / AUD_RATE / 10) * 10).toLocaleString('en-AU');
       const date = (d) => new Date(d + 'T00:00:00').toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' });
+      const PETS = { yes: 'Pets welcome', ask: 'Pets on request', no: 'No pets' };
       const grid = document.getElementById('mrGrid');
       const empty = document.getElementById('mrEmpty');
 
@@ -238,6 +239,7 @@
             <div class="mr-facts">${esc(facts)}</div>
             <div class="mr-price">${rp(v.monthly_rent_idr)} <small>/ month · about ${aud(v.monthly_rent_idr)}</small></div>
             <div class="mr-facts">${esc(avail)} · minimum ${v.min_months || 1} month${(v.min_months || 1) > 1 ? 's' : ''}</div>
+            <div class="mr-facts">No smoking indoors · ${esc(PETS[v.pets] || PETS.no)}</div>
             <p>${esc(v.description)}</p>
             ${v.includes && v.includes.length ? `<div class="mr-tags">${v.includes.map((i) => `<span>${esc(i)}</span>`).join('')}</div>` : ''}
             <a class="btn-gold" target="_blank" rel="noopener" href="https://wa.me/61433175444?text=${msg}">Enquire on WhatsApp</a>

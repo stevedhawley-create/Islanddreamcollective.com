@@ -1,5 +1,5 @@
 {
-  "_how_to": "Add one object per villa to 'listings'. Copy the 'example' block, fill it in, and set status to 'available' (shown) or 'let' (hidden). Rent is in rupiah per month. Photos are full URLs (first one is the cover). Commit and it goes live on /monthly-rentals and in /listing-pack.",
+  "_how_to": "Add one object per villa to 'listings'. Copy the 'example' block, fill it in, and set status to 'available' (shown) or 'let' (hidden). Rent is in rupiah per month. pets: \"no\", \"yes\" or \"ask\" (owner decides case by case). Smoking is never allowed inside. Photos are full URLs (first one is the cover). Commit and it goes live on /monthly-rentals and in /listing-pack.",
   "example": {
     "id": "canggu-4br-pererenan",
     "status": "available",
@@ -15,6 +15,7 @@
     "available_from": "2026-11-01",
     "furnished": true,
     "pool": true,
+    "pets": "ask",
     "includes": ["Weekly clean & linen change", "Pool and garden care", "Wi-Fi", "Banjar fees"],
     "excludes": ["Electricity (token meter)", "Drinking water"],
     "description": "Quiet residential lane, five minutes to Pererenan beach. Enclosed living, full kitchen, private pool and staff quarters.",
