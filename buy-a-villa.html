@@ -69,6 +69,13 @@
     .zc-facts { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:10px 20px; margin-top:14px; font-size:0.9rem; }
     .zc-facts span { display:block; font-size:0.72rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--mid); }
     .zc-error { color:#B42318; margin-top:12px; font-size:0.9rem; }
+    .zc-map { margin-top:16px; border-radius:10px; overflow:hidden; border:1px solid rgba(28,43,58,0.12); background:#EEF0F3; }
+    .zc-map img { display:block; width:100%; height:auto; }
+    .zc-map-cap { font-size:0.78rem; color:var(--mid); padding:8px 12px; background:#fff; }
+    .zc-actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; }
+    .zc-actions button { padding:10px 16px; border-radius:8px; border:1px solid rgba(28,43,58,0.25); background:#fff; color:var(--navy); font:inherit; font-size:0.88rem; font-weight:600; cursor:pointer; }
+    .zc-actions button.primary { background:var(--navy); color:#fff; border-color:var(--navy); }
+    .zc-actions button:disabled { opacity:0.6; cursor:default; }
     .price-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:20px; }
     .price-card { background:#fff; border:1px solid rgba(28,43,58,0.12); border-radius:14px; padding:26px; }
     .price-card h3 { margin:0 0 6px; color:var(--navy); }
@@ -377,6 +384,110 @@
     function track(name, params) { try { if (window.gtag) gtag("event", name, params || {}); } catch (e) {} }
 
     var zcForm = document.getElementById("zc-form"), zcOut = document.getElementById("zc-out"), zcBtn = document.getElementById("zc-btn");
+    var last = null;
+
+    // Map: a satellite image with a pin, fetched through the hostOPZ server so
+    // the Google key stays private. Also kept as a JPG for the PDF and download.
+    function loadMap(r) {
+      fetch(API + "?resource=zoneMap&lat=" + r.d.lat + "&lng=" + r.d.lng)
+        .then(function (res) { if (!res.ok) throw new Error("no map"); return res.blob(); })
+        .then(function (blob) {
+          var url = URL.createObjectURL(blob), img = document.getElementById("zc-map-img");
+          if (!img || last !== r) return;
+          img.onload = function () {
+            try {
+              var c = document.createElement("canvas");
+              c.width = img.naturalWidth; c.height = img.naturalHeight;
+              c.getContext("2d").drawImage(img, 0, 0);
+              r.mapJpg = c.toDataURL("image/jpeg", 0.9);
+              r.mapW = c.width; r.mapH = c.height;
+              document.getElementById("zc-jpg").hidden = false;
+            } catch (e) {}
+          };
+          img.src = url;
+          document.getElementById("zc-map").hidden = false;
+        })
+        .catch(function () {});
+    }
+    function fileTag(r) { return (r.d.zone.code || "result").replace(/[^A-Za-z0-9-]/g, "") + "-" + new Date().toISOString().slice(0, 10); }
+    function saveFile(dataUrl, name) {
+      var a = document.createElement("a"); a.href = dataUrl; a.download = name;
+      document.body.appendChild(a); a.click(); a.remove();
+    }
+    function loadScript(src) {
+      return new Promise(function (ok, fail) { var s = document.createElement("script"); s.src = src; s.onload = ok; s.onerror = fail; document.head.appendChild(s); });
+    }
+    function imageData(src) {
+      return fetch(src).then(function (r) { return r.blob(); }).then(function (b) {
+        return new Promise(function (ok) { var fr = new FileReader(); fr.onload = function () { ok(fr.result); }; fr.readAsDataURL(b); });
+      }).catch(function () { return null; });
+    }
+
+    // PDF report of the result, built in the browser.
+    var FILL = { pink: [255, 225, 230], yellow: [254, 243, 199], green: [220, 252, 231], other: [238, 240, 243] };
+    var INK = { pink: [190, 18, 60], yellow: [146, 64, 14], green: [22, 101, 52], other: [55, 65, 81] };
+    function downloadPdf(r, btn) {
+      btn.disabled = true; btn.textContent = "Preparing PDF…";
+      var ready = window.jspdf ? Promise.resolve() : loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js");
+      Promise.all([ready, imageData("logo.png")]).then(function (res) {
+        var logo = res[1], d = r.d, z = d.zone, c = COLOUR[z.colour] || COLOUR.other, col = z.colour in FILL ? z.colour : "other";
+        var doc = new window.jspdf.jsPDF({ unit: "mm", format: "a4" }), W = 210, M = 16, y = 16;
+        var navy = [28, 43, 58], mid = [107, 114, 128];
+        function text(str, size, opts) {
+          opts = opts || {};
+          doc.setFont("helvetica", opts.bold ? "bold" : "normal"); doc.setFontSize(size); doc.setTextColor.apply(doc, opts.color || navy);
+          var lines = doc.splitTextToSize(String(str), W - 2 * M - (opts.indent || 0));
+          doc.text(lines, M + (opts.indent || 0), y); y += lines.length * size * 0.42 + (opts.after || 2);
+        }
+        if (logo) { try { doc.addImage(logo, "PNG", M, y - 4, 14, 14); } catch (e) {} }
+        doc.setFont("helvetica", "bold"); doc.setFontSize(15); doc.setTextColor.apply(doc, navy);
+        doc.text("Island Dream Collective", M + (logo ? 18 : 0), y + 2);
+        doc.setFont("helvetica", "normal"); doc.setFontSize(10); doc.setTextColor.apply(doc, mid);
+        doc.text("Villa zoning check · " + new Date().toLocaleDateString("en-AU", { day: "numeric", month: "long", year: "numeric" }), M + (logo ? 18 : 0), y + 8);
+        y += 18; doc.setDrawColor(228, 221, 211); doc.line(M, y, W - M, y); y += 8;
+
+        text("Location checked", 8, { color: mid, after: 1 });
+        text(r.q, 11, { after: 1 });
+        if (d.place && d.place.name) text("Found: " + d.place.name + (d.place.address ? ", " + d.place.address : ""), 9, { color: mid, after: 1 });
+        text("Coordinates: " + d.lat.toFixed(6) + ", " + d.lng.toFixed(6), 9, { color: mid, after: 5 });
+
+        doc.setFillColor.apply(doc, FILL[col]); doc.roundedRect(M, y - 5, 34, 8, 1.5, 1.5, "F");
+        doc.setFont("helvetica", "bold"); doc.setFontSize(10); doc.setTextColor.apply(doc, INK[col]); doc.text(c[0], M + 3, y);
+        doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.setTextColor.apply(doc, mid);
+        doc.text(doc.splitTextToSize(c[1], W - 2 * M - 40), M + 38, y - 1); y += 10;
+        text(PERM[z.villas] || "", 16, { bold: true, after: 4 });
+
+        var facts = [["Official zone", z.code + " · " + z.name], ["Guest houses", (PERM[z.guestHouses] || "").replace("Villas ", "").replace(/^./, function (ch) { return ch.toUpperCase(); })],
+          ["Protected farmland", z.greenBelt ? "Yes: a red flag" : "No"], ["Disaster-risk area", z.disasterRisk ? "Yes: check before buying" : "No"]];
+        facts.forEach(function (f) {
+          doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor.apply(doc, mid); doc.text(f[0].toUpperCase(), M, y);
+          doc.setFontSize(10); doc.setTextColor.apply(doc, navy);
+          var lines = doc.splitTextToSize(f[1], W - 2 * M - 48); doc.text(lines, M + 48, y); y += Math.max(6, lines.length * 4.5 + 1.5);
+        });
+        y += 3;
+
+        if (r.mapJpg) {
+          var mw = W - 2 * M, mh = mw * (r.mapH / r.mapW);
+          if (mh > 100) { mw = mw * 100 / mh; mh = 100; }
+          doc.addImage(r.mapJpg, "JPEG", M + (W - 2 * M - mw) / 2, y, mw, mh); y += mh + 4;
+          doc.setFontSize(8); doc.setTextColor.apply(doc, mid);
+          doc.textWithLink("Red pin: the spot checked. Open in Google Maps", M, y, { url: "https://www.google.com/maps/search/?api=1&query=" + d.lat + "," + d.lng });
+          y += 8;
+        } else {
+          text("Map: https://www.google.com/maps/search/?api=1&query=" + d.lat + "," + d.lng, 9, { color: mid, after: 6 });
+        }
+
+        if (y > 250) { doc.addPage(); y = 20; }
+        text("Next steps", 11, { bold: true, after: 1 });
+        text("Zoning is one of seven checks we run before you commit: that the villa is really for sale, zoning, land certificate, lease, permits, a site visit and the real booking income. Ask us for a full villa check.", 9, { after: 3 });
+        text("hello@islanddreamcollective.com · WhatsApp +61 433 175 444 · islanddreamcollective.com/buy-a-villa", 9, { bold: true, after: 5 });
+        text("Source: BATARA, Badung Regency's official spatial plan (RDTR), checked " + new Date().toLocaleString("en-AU") + ". Map imagery: Google. This report is general information, not legal advice. Confirm zoning, title and permits with a licensed notary before buying.", 7.5, { color: mid, after: 0 });
+
+        doc.save("IDC-zoning-" + fileTag(r) + ".pdf");
+        track("zoning_pdf", { zone: z.code, map: r.mapJpg ? 1 : 0 });
+      }).catch(function () { alert("Couldn't make the PDF right now. Please try again."); })
+        .then(function () { btn.disabled = false; btn.textContent = "Download PDF report"; });
+    }
     zcForm.addEventListener("submit", function (e) {
       e.preventDefault();
       var q = document.getElementById("zc-input").value.trim();
@@ -396,6 +507,8 @@
             + '<div><span>Guest houses</span>' + esc((PERM[z.guestHouses] || "").replace("Villas ", "")) + '</div>'
             + '<div><span>Protected farmland</span>' + (z.greenBelt ? "Yes: a red flag" : "No") + '</div>'
             + '<div><span>Disaster-risk area</span>' + (z.disasterRisk ? "Yes: check before buying" : "No") + '</div></div>'
+            + '<div class="zc-map" id="zc-map" hidden><img id="zc-map-img" alt="Satellite map with a pin on the checked villa" /><div class="zc-map-cap">Pin: the spot checked (' + d.lat.toFixed(5) + ', ' + d.lng.toFixed(5) + '). <a href="https://www.google.com/maps/search/?api=1&query=' + d.lat + ',' + d.lng + '" target="_blank" rel="noopener">Open in Google Maps</a></div></div>'
+            + '<div class="zc-actions"><button type="button" class="primary" id="zc-pdf">Download PDF report</button><button type="button" id="zc-jpg" hidden>Save map (JPG)</button></div>'
             + '<p style="margin-top:16px;font-size:0.92rem">Zoning is one of seven checks. <a href="#enquire" id="zc-next">Get the full villa check →</a></p>'
             + '<p style="margin-top:8px;font-size:0.75rem;color:var(--mid)">From BATARA, Badung Regency\'s official spatial plan (RDTR). Not legal advice; confirm with a licensed notary before buying.</p>';
           document.getElementById("zc-next").addEventListener("click", function () {
@@ -403,6 +516,12 @@
             if (!link.value) link.value = /^https?:/i.test(q) ? q : "";
             var msg = document.getElementById("b-message");
             if (!msg.value) msg.value = "Villa at " + q + " (zoning " + z.code + ", " + (PERM[z.villas] || "").toLowerCase() + ").";
+          });
+          last = { q: q, d: d, mapJpg: null };
+          loadMap(last);
+          document.getElementById("zc-pdf").addEventListener("click", function () { downloadPdf(last, this); });
+          document.getElementById("zc-jpg").addEventListener("click", function () {
+            if (last.mapJpg) saveFile(last.mapJpg, "IDC-zoning-map-" + fileTag(last) + ".jpg");
           });
           track("zoning_check", { zone: z.code });
         })
