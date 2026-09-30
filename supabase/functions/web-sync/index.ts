@@ -21,7 +21,7 @@ import { createClient } from "jsr:@supabase/supabase-js@2";
 const DEFAULT_GA4_PROPERTIES =
   "541593723:BVB Website,543472930:Island Dream Collective Website,552472225:hostOPZ";
 const DEFAULT_GSC_SITES =
-  "https://www.balivillabookings.com/,https://www.islanddreamcollective.com/";
+  "https://www.balivillabookings.com/,https://www.islanddreamcollective.com/,https://hostopz.com/";
 
 const SCOPES = [
   "https://www.googleapis.com/auth/analytics.readonly",
