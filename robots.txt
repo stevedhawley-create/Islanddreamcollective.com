@@ -1,4 +1,6 @@
 User-agent: *
 Allow: /
+Disallow: /listing-pack
+Disallow: /listing-pack.html
 
 Sitemap: https://www.islanddreamcollective.com/sitemap.xml

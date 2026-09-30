@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" href="logo.png" type="image/png"/>
+  <title>Listing Pack | IDC</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body { background: var(--sand); }
+    .lp { max-width: 980px; margin: 0 auto; padding: 2.5rem 1rem 4rem; }
+    .lp h1 { font-weight: 300; color: var(--navy); margin-bottom: 0.5rem; }
+    .lp > p { color: var(--mid); margin-bottom: 2rem; line-height: 1.6; }
+    .lp select { font: inherit; padding: 0.6rem; border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 1.5rem; width: 100%; max-width: 480px; }
+    .lp-block { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1.25rem; }
+    .lp-head { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 0.4rem; }
+    .lp-head h2 { font-size: 1rem; font-weight: 500; color: var(--navy); }
+    .lp-block .hint { font-size: 0.8rem; color: var(--mid); margin-bottom: 0.75rem; }
+    .lp textarea { width: 100%; min-height: 220px; font: 0.88rem/1.55 var(--font); padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius); resize: vertical; }
+    .lp button { font: inherit; font-size: 0.8rem; background: var(--navy); color: #fff; border: 0; padding: 0.5rem 1rem; border-radius: var(--radius); cursor: pointer; flex-shrink: 0; }
+    .lp-photos { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .lp-photos a { font-size: 0.8rem; color: var(--navy); text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="lp">
+    <h1>Listing pack</h1>
+    <p>Internal tool. Pick a villa from <code>data/listings.json</code> and copy the ready-made text into each site. Photos are linked at the bottom to download and upload.</p>
+    <select id="pick"></select>
+    <div id="out"></div>
+  </div>
+  <script>
+    const AUD_RATE = 12500;
+    const rp = (n) => 'Rp ' + Number(n).toLocaleString('id-ID');
+    const juta = (n) => (n / 1e6).toLocaleString('id-ID') + ' juta';
+    const aud = (n) => 'A$' + (Math.round(n / AUD_RATE / 10) * 10).toLocaleString('en-AU');
+    const date = (d) => d ? new Date(d + 'T00:00:00').toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' }) : 'now';
+    const tanggal = (d) => d ? new Date(d + 'T00:00:00').toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : 'sekarang';
+    const PAGE = 'https://www.islanddreamcollective.com/monthly-rentals';
+    const WA = '+61 433 175 444';
+    const plural = (n, w) => n + ' ' + w + (n > 1 ? 's' : '');
+
+    function packs(v) {
+      const inc = (v.includes || []).join(', ') || 'Ask us';
+      const exc = (v.excludes || []).join(', ') || 'Nothing else';
+      const size = [v.land_m2 ? v.land_m2 + ' m² land' : '', v.building_m2 ? v.building_m2 + ' m² building' : ''].filter(Boolean).join(' · ');
+      const facts = `${v.bedrooms} bedrooms · ${v.bathrooms} bathrooms${v.pool ? ' · private pool' : ''} · ${v.furnished ? 'fully furnished' : 'unfurnished'}${size ? ' · ' + size : ''}`;
+      const terms = `Minimum ${plural(v.min_months || 1, 'month')} · ${plural(v.deposit_months || 1, 'month')}' deposit · available from ${date(v.available_from)}`;
+      return [
+        {
+          name: 'Facebook groups and Marketplace',
+          hint: 'Bali Villa/House Rentals groups, Canggu Community, Marketplace > Property for rent. Post with 5–10 photos.',
+          text: `🏡 MONTHLY RENTAL: ${v.title}\n📍 ${v.area}\n\n${rp(v.monthly_rent_idr)} per month (about ${aud(v.monthly_rent_idr)})\n\n${facts}\n\n${v.description}\n\n✅ Included: ${inc}\n➖ Not included: ${exc}\n\n📅 ${terms}\n\nManaged by Island Dream Collective, a local team on call for maintenance. Written agreement and inventory with every tenancy.\n\nWhatsApp ${WA} or see ${PAGE}`,
+        },
+        {
+          name: 'Flatio, Airbnb monthly and English portals',
+          hint: 'Title first line, description below. Airbnb: only if the zoning allows it. Set min stay to 28+ nights.',
+          text: `${v.title}, ${v.area}: monthly rental\n\n${v.description}\n\nThe villa\n${facts}\n\nIncluded in the rent\n${inc}\n\nPaid by the tenant\n${exc}\n\nTerms\n${terms}. Rent ${rp(v.monthly_rent_idr)} per month, paid monthly in advance.\n\nManaged by Island Dream Collective, with a written tenancy agreement, a check-in inventory and a local team on call throughout your stay.`,
+        },
+        {
+          name: 'Rumah123, 99.co, Lamudi, OLX (Bahasa Indonesia)',
+          hint: 'Choose "Disewa", property type Villa, period "Bulanan". Paste the title into the title field.',
+          text: `Disewakan Villa ${v.bedrooms} Kamar Tidur di ${v.area}, Bulanan\n\nHarga: ${rp(v.monthly_rent_idr)} / bulan (${juta(v.monthly_rent_idr)})\n\n${v.bedrooms} kamar tidur, ${v.bathrooms} kamar mandi${v.pool ? ', kolam renang pribadi' : ''}, ${v.furnished ? 'full furnished' : 'unfurnished'}${v.land_m2 ? ', LT ' + v.land_m2 + ' m²' : ''}${v.building_m2 ? ', LB ' + v.building_m2 + ' m²' : ''}.\n\nTermasuk: ${inc}\nTidak termasuk: ${exc}\n\nMinimal sewa ${v.min_months || 1} bulan, deposit ${v.deposit_months || 1} bulan. Tersedia mulai ${tanggal(v.available_from)}.\n\nDikelola oleh PT Island Dream Collective. Hubungi WhatsApp ${WA}.`,
+        },
+        {
+          name: 'Instagram caption',
+          hint: 'Carousel post or Reel. Put the villa link in bio or stories.',
+          text: `Now renting monthly ✨ ${v.title}, ${v.area}\n\n${v.bedrooms} bed · ${v.bathrooms} bath${v.pool ? ' · private pool' : ''}\n${rp(v.monthly_rent_idr)} / month\nFrom ${date(v.available_from)}\n\nDM us or WhatsApp ${WA} to arrange a viewing.\n\n#balirentals #canggurentals #balivilla #monthlyrental #balilongterm #digitalnomadbali #islanddreamcollective`,
+        },
+      ];
+    }
+
+    function render(v) {
+      const out = document.getElementById('out');
+      out.innerHTML = '';
+      for (const p of packs(v)) {
+        const b = document.createElement('div');
+        b.className = 'lp-block';
+        b.innerHTML = `<div class="lp-head"><h2></h2><button>Copy</button></div><div class="hint"></div><textarea></textarea>`;
+        b.querySelector('h2').textContent = p.name;
+        b.querySelector('.hint').textContent = p.hint;
+        const ta = b.querySelector('textarea');
+        ta.value = p.text;
+        const btn = b.querySelector('button');
+        btn.onclick = () => navigator.clipboard.writeText(ta.value).then(() => { btn.textContent = 'Copied'; setTimeout(() => (btn.textContent = 'Copy'), 1500); });
+        out.appendChild(b);
+      }
+      const ph = document.createElement('div');
+      ph.className = 'lp-block';
+      ph.innerHTML = '<div class="lp-head"><h2>Photos</h2></div><div class="lp-photos"></div>';
+      (v.photos || []).forEach((u, i) => {
+        const a = document.createElement('a');
+        a.href = u; a.target = '_blank'; a.rel = 'noopener'; a.textContent = 'Photo ' + (i + 1);
+        ph.querySelector('.lp-photos').appendChild(a);
+      });
+      out.appendChild(ph);
+    }
+
+    fetch('data/listings.json', { cache: 'no-cache' }).then((r) => r.json()).then((d) => {
+      const list = (d.listings || []).length ? d.listings : [Object.assign({}, d.example, { title: d.example.title + ' (example)' })];
+      const pick = document.getElementById('pick');
+      list.forEach((v, i) => { const o = document.createElement('option'); o.value = i; o.textContent = `${v.title} (${v.status})`; pick.appendChild(o); });
+      pick.onchange = () => render(list[pick.value]);
+      render(list[0]);
+    });
+  </script>
+</body>
+</html>
