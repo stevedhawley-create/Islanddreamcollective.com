@@ -1,5 +1,6 @@
 // web-sync: pulls daily website stats from Google Analytics 4 and Google Search
-// Console into public.ga4_daily and public.search_console_daily. Triggered by
+// Console into public.ga4_daily, public.ga4_events_daily (the booking and
+// sign-up steps, by source) and public.search_console_daily. Triggered by
 // pg_cron (see the web_sync migration) or manually with
 // `select public.web_sync_trigger();`.
 //
@@ -155,12 +156,51 @@ async function syncGa4(token: string, from: string, to: string, now: string) {
         };
       });
       await upsert("ga4_daily", rows, "property_id,date,source_medium");
-      out[name] = { rows: rows.length };
+      const events = await syncGa4Events(token, id, name, from, to, now);
+      out[name] = { rows: rows.length, events };
     } catch (e) {
       out[name] = { error: String(e instanceof Error ? e.message : e) };
     }
   }
   return out;
+}
+
+// The steps that matter on each site, so the funnel can be read day by day:
+// BVB's booking steps (book.html / thank-you.html) and hostOPZ's sign-up.
+const FUNNEL_EVENTS = [
+  "page_view", "stayed_15s", "view_booking_form", "select_villa", "pick_checkin", "pick_dates",
+  "add_to_cart", "begin_checkout", "contact_click", "generate_lead", "purchase", "sign_up",
+];
+
+async function syncGa4Events(token: string, id: string, name: string, from: string, to: string, now: string) {
+  const res = await fetch(`https://analyticsdata.googleapis.com/v1beta/properties/${id}:runReport`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      dateRanges: [{ startDate: from, endDate: to }],
+      dimensions: [{ name: "date" }, { name: "eventName" }, { name: "sessionSourceMedium" }],
+      metrics: [{ name: "eventCount" }, { name: "eventValue" }],
+      dimensionFilter: { filter: { fieldName: "eventName", inListFilter: { values: FUNNEL_EVENTS } } },
+      limit: 100000,
+    }),
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.error?.message ?? `HTTP ${res.status}`);
+  const rows = (json.rows ?? []).map((r: any) => {
+    const d = r.dimensionValues[0].value as string;
+    return {
+      property_id: id,
+      property_name: name,
+      date: `${d.slice(0, 4)}-${d.slice(4, 6)}-${d.slice(6, 8)}`,
+      event_name: r.dimensionValues[1].value,
+      source_medium: r.dimensionValues[2].value || "(not set)",
+      event_count: Math.round(Number(r.metricValues[0].value)),
+      event_value: Math.round(Number(r.metricValues[1].value) * 100) / 100,
+      synced_at: now,
+    };
+  });
+  await upsert("ga4_events_daily", rows, "property_id,date,event_name,source_medium");
+  return rows.length;
 }
 
 // ---------- Search Console ----------
