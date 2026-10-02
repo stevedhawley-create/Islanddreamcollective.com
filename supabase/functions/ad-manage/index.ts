@@ -10,6 +10,9 @@
 //   { "action": "set_daily_budget", "id": "<id>", "daily_budget": 150000 }
 //       daily_budget is in the account's currency as Meta stores it
 //       (whole rupiah for IDR accounts; cents for AUD accounts)
+//   { "action": "set_placements", "id": "<ad set id>", "publisher_platforms": ["facebook"] }
+//       where an ad set's ads show: any of facebook, instagram, messenger,
+//       audience_network, threads. Positions on dropped platforms are removed.
 //   add "confirm": true to apply; without it the change is only previewed.
 //
 // Secrets: META_ACCESS_TOKEN (needs ads_management), META_AD_ACCOUNT_IDS,
@@ -73,6 +76,43 @@ async function current(id: string) {
   return obj;
 }
 
+const PLATFORMS = ["facebook", "instagram", "messenger", "audience_network", "threads"];
+const POSITION_KEYS: Record<string, string> = {
+  facebook: "facebook_positions", instagram: "instagram_positions", messenger: "messenger_positions",
+  audience_network: "audience_network_positions", threads: "threads_positions",
+};
+
+// Changes which platforms an ad set's ads show on. Meta needs the whole
+// targeting object back, so the current one is read, edited and resent.
+async function setPlacements(body: Record<string, unknown>) {
+  if (!body.id) throw new Error("id is required");
+  const wanted = Array.isArray(body.publisher_platforms) ? body.publisher_platforms.map(String) : [];
+  if (!wanted.length || wanted.some((p) => !PLATFORMS.includes(p))) {
+    throw new Error("publisher_platforms must list one or more of: " + PLATFORMS.join(", "));
+  }
+  const id = String(body.id);
+  const obj = await graph(id, { fields: "id,name,account_id,targeting" });
+  if (!accounts().includes(String(obj.account_id))) throw new Error(`Object ${id} is not in an allowed ad account`);
+  if (!obj.targeting) throw new Error("This object has no targeting (placements are set on an ad set)");
+  const before = obj.targeting;
+  const after: Record<string, unknown> = { ...before, publisher_platforms: wanted };
+  for (const p of PLATFORMS) if (!wanted.includes(p)) delete after[POSITION_KEYS[p]];
+  const summary = (t: Record<string, unknown>) => ({
+    publisher_platforms: t.publisher_platforms ?? "automatic (all)",
+    ...Object.fromEntries(Object.values(POSITION_KEYS).filter((k) => t[k]).map((k) => [k, t[k]])),
+  });
+  if (body.confirm !== true) {
+    return Response.json({ ok: true, preview: true, id, name: obj.name, before: summary(before), after: summary(after) });
+  }
+  await graph(id, { targeting: JSON.stringify(after) }, "POST");
+  const now = await graph(id, { fields: "targeting" });
+  await supabase.from("ad_change_log").insert({
+    platform: "meta", object_id: id, object_name: obj.name, action: "set_placements",
+    before: summary(before), after: summary(now.targeting ?? {}), note: (body.note as string) ?? null,
+  });
+  return Response.json({ ok: true, applied: true, id, name: obj.name, before: summary(before), after: summary(now.targeting ?? {}) });
+}
+
 Deno.serve(async (req) => {
   if (req.method !== "POST") return new Response("Method not allowed", { status: 405 });
 
@@ -85,6 +125,8 @@ Deno.serve(async (req) => {
     if (!token() || accounts().length === 0) throw new Error("META secrets not set");
 
     if (body.action === "list") return Response.json({ ok: true, accounts: await list() });
+
+    if (body.action === "set_placements") return await setPlacements(body);
 
     if (!["pause", "activate", "set_daily_budget"].includes(body.action)) {
       throw new Error(`Unknown action: ${body.action}`);
