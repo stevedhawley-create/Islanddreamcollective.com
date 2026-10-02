@@ -1,6 +1,7 @@
 // web-sync: pulls daily website stats from Google Analytics 4 and Google Search
 // Console into public.ga4_daily, public.ga4_events_daily (the booking and
-// sign-up steps, by source) and public.search_console_daily. Triggered by
+// sign-up steps, by source), public.search_console_daily and, once
+// CLARITY_API_TOKEN is set, public.clarity_daily (Microsoft Clarity's summary). Triggered by
 // pg_cron (see the web_sync migration) or manually with
 // `select public.web_sync_trigger();`.
 //
@@ -13,6 +14,8 @@
 //   GOOGLE_SERVICE_ACCOUNT_JSON  the service account's JSON key file, pasted whole
 //   GA4_PROPERTIES   optional, "id:name,id:name" (defaults below)
 //   GSC_SITES        optional, comma-separated Search Console site URLs (defaults below)
+//   CLARITY_API_TOKEN  optional, Clarity -> Settings -> Data Export -> Generate new API token
+//   CLARITY_PROJECT_ID optional, defaults to balivillabookings.com's project
 // The service account's email must be added as a Viewer in each GA4 property and
 // as a Restricted user in each Search Console property.
 
@@ -260,6 +263,39 @@ async function syncSearchConsole(token: string, from: string, to: string, now: s
   return out;
 }
 
+// ---------- Microsoft Clarity ----------
+// The export API gives the last 1-3 days (here: the last 24 hours) and allows
+// 10 calls a day per project, so each run makes two: the site overall and per
+// page. Saved against yesterday's date.
+const CLARITY_EXPORT = "https://www.clarity.ms/export-data/api/v1/project-live-insights";
+
+async function syncClarity(now: string) {
+  const token = env("CLARITY_API_TOKEN");
+  if (!token) return "skipped: CLARITY_API_TOKEN not set";
+  const project = env("CLARITY_PROJECT_ID") ?? "yrfe2b1bpn";
+  const date = addDays(isoDate(new Date()), -1);
+  const rows: Record<string, unknown>[] = [];
+  for (const byUrl of [false, true]) {
+    const res = await fetch(CLARITY_EXPORT + "?numOfDays=1" + (byUrl ? "&dimension1=URL" : ""), {
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    });
+    if (!res.ok) throw new Error(`Clarity HTTP ${res.status}: ${(await res.text()).slice(0, 200)}`);
+    const json = await res.json();
+    for (const m of Array.isArray(json) ? json : []) {
+      for (const info of Array.isArray(m.information) ? m.information : []) {
+        const url = byUrl ? String(info.Url ?? info.URL ?? info.url ?? "") : "";
+        if (byUrl && !url) continue;
+        rows.push({ project_id: project, date, metric: String(m.metricName ?? ""), url: url.slice(0, 500), data: info, synced_at: now });
+      }
+    }
+  }
+  // Only the overall and per-page rows matter; keep the latest per key.
+  const seen = new Map<string, Record<string, unknown>>();
+  for (const r of rows) seen.set(`${r.metric}|${r.url}`, r);
+  await upsert("clarity_daily", [...seen.values()], "project_id,date,metric,url");
+  return { rows: seen.size, date };
+}
+
 // ---------- Handler ----------
 
 Deno.serve(async (req) => {
@@ -274,7 +310,7 @@ Deno.serve(async (req) => {
   const yesterday = addDays(isoDate(new Date()), -1);
   const to: string = body.to ?? yesterday;
   const from: string = body.from ?? addDays(to, -((body.days ?? 5) - 1));
-  const wanted: string[] = body.sources ?? ["ga4", "search_console"];
+  const wanted: string[] = body.sources ?? ["ga4", "search_console", "clarity"];
 
   const { data: run } = await supabase
     .from("web_sync_runs")
@@ -297,6 +333,11 @@ Deno.serve(async (req) => {
     } catch (e) {
       details.google = { error: String(e instanceof Error ? e.message : e) };
     }
+  }
+
+  if (wanted.includes("clarity")) {
+    try { details.clarity = await syncClarity(now); }
+    catch (e) { details.clarity = { error: String(e instanceof Error ? e.message : e) }; }
   }
 
   const failed = JSON.stringify(details).includes('"error"');
