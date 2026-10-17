@@ -334,6 +334,7 @@ a { text-decoration: none; }
 
 .container { max-width: 1100px; margin: 0 auto; }
 .container-narrow { max-width: 760px; margin: 0 auto; }
+.article-hero .container-narrow { padding: 0 24px; }
 
 .section-header { margin-bottom: 3.5rem; }
 
