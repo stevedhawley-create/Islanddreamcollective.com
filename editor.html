@@ -83,21 +83,13 @@
 <div id="signin" class="hidden">
   <h1>Site Editor</h1>
   <p class="note">Edit the text, images and layout of your websites, then publish. Changes go live about a minute after you publish.</p>
-  <h3>One-time setup: connect GitHub</h3>
-  <p>The editor saves your changes to GitHub, where your sites live. It needs a key that lets it do that. You only do this once on each device.</p>
-  <ol>
-    <li>Open <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">GitHub → New fine-grained token</a> and sign in.</li>
-    <li><b>Token name:</b> <code>Site Editor</code>. <b>Expiration:</b> pick 1 year (or "No expiration").</li>
-    <li><b>Repository access:</b> choose <b>Only select repositories</b> and select your website repositories.</li>
-    <li><b>Permissions → Repository permissions → Contents:</b> set to <b>Read and write</b>.</li>
-    <li>Click <b>Generate token</b>, copy it, and paste it below.</li>
-  </ol>
-  <div class="row">
-    <input id="token" type="password" placeholder="Paste your token (starts with github_pat_)" autocomplete="off" />
-    <button id="saveToken" class="primary">Connect</button>
-  </div>
+  <form id="loginForm" class="row">
+    <input type="text" name="username" value="editor" autocomplete="username" hidden />
+    <input id="password" type="password" placeholder="Password" autocomplete="current-password" required />
+    <button class="primary">Sign in</button>
+  </form>
   <p id="signinMsg" class="note"></p>
-  <p class="note">The key is stored only in this browser on this device. Never share it. To remove it, use <b>Sign out</b> in the editor.</p>
+  <p class="note">You stay signed in on this device for 12 hours.</p>
 </div>
 
 <!-- ============ EDITOR ============ -->
@@ -217,7 +209,7 @@
 </dialog>
 
 <script type="module">
-import { parse } from 'https://cdn.jsdelivr.net/npm/parse5@7.1.2/+esm';
+import { parse } from './editor-assets/parse5-7.1.2.js';
 
 // ---------------------------------------------------------------- config
 const SITES = [
@@ -225,10 +217,10 @@ const SITES = [
   { name: 'Bali Villa Bookings', repo: 'stevedhawley-create/BaliVillaBookings.com', url: 'https://www.balivillabookings.com/' },
   { name: 'Hostopz', repo: 'stevedhawley-create/Hostopz-landing', url: 'https://hostopz.com/' },
 ];
-const API = 'https://api.github.com';
-const TOKEN_KEY = 'site_editor_token';
+const API = '/api/editor';
 const UPLOAD_DIR = 'uploads';
 const MAX_IMAGE_WIDTH = 2000;
+const MAX_UPLOAD_BYTES = 3_000_000;   // the backend accepts requests up to about 4.5 MB
 
 // Elements that may sit inside an editable piece of text.
 const INLINE = new Set(['a','strong','em','b','i','br','span','small','sup','sub','u','mark','code','abbr','s','del','ins','time','wbr','q','cite']);
@@ -240,7 +232,6 @@ const NO_BLOCK = new Set(['html','head','body','script','style','noscript','temp
 
 // ---------------------------------------------------------------- state
 const $ = (id) => document.getElementById(id);
-let token = '';
 let site = null;          // entry from SITES
 let branch = '';          // default branch of site repo
 let pagePath = '';        // e.g. "index.html"
@@ -271,14 +262,17 @@ function relFromPage(target) { return '../'.repeat(pagePath.split('/').length - 
 function dirty() { return src !== original; }
 
 async function gh(path, opts = {}) {
-  const res = await fetch(API + path, {
+  // GitHub calls go through the site's own backend, which holds the GitHub token.
+  const res = await fetch(`${API}?action=gh&path=${encodeURIComponent(path)}`, {
     cache: 'no-store',
+    credentials: 'same-origin',
     ...opts,
-    headers: { Authorization: 'Bearer ' + token, 'X-GitHub-Api-Version': '2022-11-28', Accept: 'application/vnd.github+json', ...(opts.headers || {}) },
+    headers: { 'X-Editor': '1', ...(opts.headers || {}) },
   });
+  if (res.status === 401) { showSignIn('Your session ended. Please sign in again.'); }
   if (!res.ok) {
     let msg = res.status + ' ' + res.statusText;
-    try { const j = await res.json(); if (j.message) msg = j.message + ' (' + res.status + ')'; } catch {}
+    try { const j = await res.json(); if (j.message || j.error) msg = (j.message || j.error) + ' (' + res.status + ')'; } catch {}
     const e = new Error(msg); e.status = res.status; throw e;
   }
   return res;
@@ -517,8 +511,9 @@ async function resizeImage(file) {
   const c = document.createElement('canvas');
   c.width = Math.round(bmp.width * scale); c.height = Math.round(bmp.height * scale);
   c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
-  const png = file.type === 'image/png';
-  const blob = await new Promise((r) => c.toBlob(r, png ? 'image/png' : 'image/jpeg', 0.85));
+  let png = file.type === 'image/png';
+  let blob = await new Promise((r) => c.toBlob(r, png ? 'image/png' : 'image/jpeg', 0.85));
+  if (png && blob.size > MAX_UPLOAD_BYTES) { png = false; blob = await new Promise((r) => c.toBlob(r, 'image/jpeg', 0.85)); }
   return { blob, ext: png ? 'png' : 'jpg' };
 }
 function blobToB64(blob) {
@@ -688,7 +683,7 @@ async function openSettings() {
 // ---------------------------------------------------------------- loading
 async function loadSite() {
   site = SITES[+$('site').value];
-  localStorage.setItem('site_editor_site', $('site').value);
+  try { localStorage.setItem('site_editor_site', $('site').value); } catch {}
   $('page').innerHTML = '<option value="">Loading pages…</option>';
   try {
     const repo = await (await gh(`/repos/${site.repo}`)).json();
@@ -702,7 +697,7 @@ async function loadSite() {
     setStatus(`${pages.length} pages on ${site.name}.`);
   } catch (e) {
     $('page').innerHTML = '<option value="">Couldn\'t load pages</option>';
-    setStatus(e.status === 404 ? `Can't see ${site.repo}. Make sure your GitHub token includes this repository.` : 'Could not load pages: ' + e.message, 'err');
+    setStatus(e.status === 404 ? `Can't see ${site.repo}. Make sure the editor's GitHub token in Vercel includes this repository.` : 'Could not load pages: ' + e.message, 'err');
   }
 }
 
@@ -712,7 +707,7 @@ async function loadPage(path) {
   try {
     const meta = await (await gh(`/repos/${site.repo}/contents/${encPath(path)}?ref=${encodeURIComponent(branch)}`)).json();
     fileSha = meta.sha;
-    const raw = await (await gh(`/repos/${site.repo}/contents/${encPath(path)}?ref=${encodeURIComponent(branch)}`, { headers: { Accept: 'application/vnd.github.raw+json' } })).text();
+    const raw = await (await gh(`/repos/${site.repo}/contents/${encPath(path)}?ref=${encodeURIComponent(branch)}`, { headers: { 'X-GH-Accept': 'raw' } })).text();
     original = src = raw;
     undoStack = []; uploads = new Map(); model = null;
     reanalyse({ rerender: true });
@@ -787,31 +782,44 @@ $('menuBtn').onclick = () => {
   $('liveLink').href = site ? site.url + (pagePath && pagePath !== 'index.html' ? pagePath : '') : '#';
   $('menuDlg').showModal();
 };
-$('signOut').onclick = () => { if (!confirmLeave()) return; localStorage.removeItem(TOKEN_KEY); location.reload(); };
+$('signOut').onclick = async () => { if (!confirmLeave()) return; await fetch(`${API}?action=logout`, { method: 'POST', headers: { 'X-Editor': '1' } }).catch(() => {}); location.reload(); };
 window.addEventListener('beforeunload', (e) => { if (dirty()) { e.preventDefault(); e.returnValue = ''; } });
 
-$('saveToken').onclick = async () => {
-  token = $('token').value.trim();
-  $('signinMsg').textContent = 'Checking…'; $('signinMsg').className = 'note';
+$('loginForm').onsubmit = async (e) => {
+  e.preventDefault();
+  $('signinMsg').textContent = 'Signing in…'; $('signinMsg').className = 'note';
   try {
-    await gh('/user');
-    localStorage.setItem(TOKEN_KEY, token);
+    const res = await fetch(`${API}?action=login`, { method: 'POST', headers: { 'X-Editor': '1', 'Content-Type': 'application/json' }, body: JSON.stringify({ password: $('password').value }) });
+    const j = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(j.error || res.statusText);
+    $('password').value = '';
     start();
-  } catch (e) {
-    $('signinMsg').textContent = 'That token didn\'t work: ' + e.message; $('signinMsg').className = 'note err';
+  } catch (err) {
+    $('signinMsg').textContent = err.message; $('signinMsg').className = 'note err';
   }
 };
 
+function showSignIn(msg) {
+  $('app').classList.add('hidden'); $('signin').classList.remove('hidden');
+  $('signinMsg').textContent = msg || ''; $('signinMsg').className = msg ? 'note err' : 'note';
+  $('password').focus();
+}
+
+let started = false;
 function start() {
   $('signin').classList.add('hidden'); $('app').classList.remove('hidden');
+  if (started) return;   // signed back in after a session ended: keep the open page and its changes
+  started = true;
   $('site').innerHTML = SITES.map((s, i) => `<option value="${i}">${escText(s.name)}</option>`).join('');
-  const saved = localStorage.getItem('site_editor_site');
+  let saved = null; try { saved = localStorage.getItem('site_editor_site'); } catch {}
   if (saved && SITES[+saved]) $('site').value = saved;
   loadSite();
 }
 
-try { token = localStorage.getItem(TOKEN_KEY) || ''; } catch { token = ''; }
-if (token) start(); else $('signin').classList.remove('hidden');
+fetch(`${API}?action=session`, { cache: 'no-store' })
+  .then((r) => r.json().then((j) => ({ ok: r.ok, j })))
+  .then(({ ok, j }) => (ok && j.signedIn ? start() : showSignIn(ok ? '' : j.error)))
+  .catch(() => showSignIn('Could not reach the editor backend.'));
 </script>
 </body>
 </html>
