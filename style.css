@@ -893,3 +893,9 @@ a { text-decoration: none; }
   font-size: 1.1rem;
   color: rgba(255,255,255,0.85);
 }
+
+/* Services income calculator: stack the three results on phones */
+@media (max-width: 600px) {
+  .calc-results { grid-template-columns: 1fr !important; padding: 20px !important; gap: 16px !important; }
+  .calc-results > div { border-left: 0 !important; border-right: 0 !important; }
+}
