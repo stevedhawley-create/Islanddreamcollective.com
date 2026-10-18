@@ -152,6 +152,16 @@
         <p class="zc-hint">Type the villa's name as it shows in Google Maps, paste its Share link, or long-press the roof in Google Maps and copy the numbers. Covers Badung: Canggu, Seminyak, Kuta, Jimbaran, Uluwatu and Nusa Dua.</p>
         <div id="zc-out" class="zc-result" aria-live="polite"></div>
       </div>
+      <div class="zc-box" style="margin-top:1rem">
+        <h3 style="margin:0 0 8px;color:var(--navy);font-size:1.05rem">Double-check it officially</h3>
+        <p style="color:var(--mid);font-size:0.9rem;margin:0 0 10px">Our tool is a fast first check. Before you pay a deposit, confirm zoning with the government's own systems:</p>
+        <ul style="color:var(--mid);font-size:0.9rem;line-height:1.7;padding-left:1.1rem;margin:0">
+          <li><strong>GISTARU</strong>, the land ministry's official spatial-plan map, covering Badung, Gianyar (Ubud) and Denpasar (Sanur): <a href="https://gistaru.atrbpn.go.id/" target="_blank" rel="noopener" style="color:var(--gold)">gistaru.atrbpn.go.id</a></li>
+          <li><strong>BHUMI</strong>, to confirm the plot on the land certificate is the one you're looking at: <a href="https://bhumi.atrbpn.go.id/" target="_blank" rel="noopener" style="color:var(--gold)">bhumi.atrbpn.go.id</a></li>
+          <li><strong>KKPR</strong>, the government's binding confirmation that a use is allowed at that spot, issued through the OSS licensing system. Your notary or licensing agent can check or obtain it.</li>
+        </ul>
+        <p style="color:var(--mid);font-size:0.85rem;margin:10px 0 0">Our <a href="#enquire" style="color:var(--gold)">Villa Check</a> covers all three for you.</p>
+      </div>
     </div>
   </section>
 
@@ -503,7 +513,7 @@
           if (d.error) { zcOut.innerHTML = '<p class="zc-error">' + esc(d.error) + '</p>'; return; }
           // Searched by name or Share link: say which place was found.
           var found = d.place && d.place.name ? '<p style="font-size:0.85rem;color:var(--mid);margin-bottom:10px">Found: <strong>' + esc(d.place.name) + '</strong>' + (d.place.address ? ' · ' + esc(d.place.address) : '') + '. Not the right villa? Paste its Google Maps Share link or coordinates instead.</p>' : '';
-          if (!d.zone) { zcOut.innerHTML = found + '<p class="zc-error">' + esc(d.note || "No official zoning found for that spot.") + ' <a href="https://wa.me/61433175444?text=' + encodeURIComponent("Hi, can you check the zoning for this villa? " + q) + '" target="_blank" rel="noopener">Ask us on WhatsApp</a>.</p>'; return; }
+          if (!d.zone) { zcOut.innerHTML = found + '<p class="zc-error">' + esc(d.note || "No official zoning found for that spot.") + ' Outside Badung (for example Ubud or Sanur)? Check the official map at <a href="https://gistaru.atrbpn.go.id/" target="_blank" rel="noopener">GISTARU</a>, or <a href="https://wa.me/61433175444?text=' + encodeURIComponent("Hi, can you check the zoning for this villa? " + q) + '" target="_blank" rel="noopener">Ask us on WhatsApp</a>.</p>'; return; }
           var z = d.zone, c = COLOUR[z.colour] || COLOUR.other;
           zcOut.innerHTML = found + '<span class="zc-colour zc-' + esc(z.colour) + '">' + esc(c[0]) + '</span> <span style="color:var(--mid);font-size:0.9rem">' + esc(c[1]) + '</span>'
             + '<div class="zc-verdict">' + esc(PERM[z.villas] || "") + '</div>'
