@@ -173,6 +173,9 @@ async function syncGa4(token: string, from: string, to: string, now: string) {
 const FUNNEL_EVENTS = [
   "page_view", "stayed_15s", "view_booking_form", "select_villa", "pick_checkin", "pick_dates",
   "add_to_cart", "begin_checkout", "contact_click", "generate_lead", "purchase", "sign_up",
+  // BVB, between seeing a price and paying (book.html, 20 Oct 2026).
+  "price_book_tap", "price_ask_tap", "whatsapp_question", "checkout_bar_tap", "quote_open",
+  "details_started", "pay_tap", "pay_blocked",
 ];
 
 async function syncGa4Events(token: string, id: string, name: string, from: string, to: string, now: string) {
