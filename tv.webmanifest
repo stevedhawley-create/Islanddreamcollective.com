@@ -1,0 +1,14 @@
+{
+  "name": "Island Dream Collective TV",
+  "short_name": "IDC TV",
+  "start_url": "/tv.html",
+  "scope": "/",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#111D27",
+  "theme_color": "#111D27",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/logo-icon.png", "sizes": "240x240", "type": "image/png", "purpose": "any" }
+  ]
+}
