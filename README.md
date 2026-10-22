@@ -56,3 +56,10 @@ In the `<head>` of the old list-your-villa.html on balivillabookings.com, add:
 <meta http-equiv="refresh" content="0; url=https://www.islanddreamco.com/list-your-villa.html" />
 ```
 Or handle via Vercel redirects config in vercel.json.
+
+## TV Display (Fire TV / Android TV)
+`tv.html` is a full-screen villa slideshow built for a TV remote. It is not linked from the site and is set to `noindex`.
+- Remote: left/right changes villa, up shows details, down hides them, OK pauses.
+- Villas are listed in the `SLIDES` array near the bottom of `tv.html`.
+- Quick use: open `https://www.islanddreamcollective.com/tv.html` in the TV's browser (Silk on Fire TV).
+- As an installable app: once the site is live, paste that URL into PWABuilder (pwabuilder.com) and choose Android, then sideload the APK with the Downloader app. `tv.webmanifest` already sets fullscreen and landscape.

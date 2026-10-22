@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <meta name="theme-color" content="#111D27" />
+  <link rel="manifest" href="/tv.webmanifest" />
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+  <title>Island Dream Collective TV</title>
+  <style>
+    :root {
+      --navy: #1C2B3A; --navy-deep: #111D27; --gold: #C9A96E; --gold-light: #E8D5B0; --white: #FFFFFF;
+      --font: 'Helvetica Neue', 'Arial', sans-serif;
+      /* TV safe area: keep text 5% in from every edge */
+      --safe-x: 5vw; --safe-y: 5vh;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; overflow: hidden; background: var(--navy-deep); color: var(--white); font-family: var(--font); cursor: none; }
+    .slide { position: absolute; inset: 0; opacity: 0; transition: opacity 1s ease; pointer-events: none; }
+    .slide.on { opacity: 1; }
+    .slide img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.04); transition: transform 14s linear; }
+    .slide.on img { transform: scale(1.12); }
+    .shade { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(17,29,39,.92) 0%, rgba(17,29,39,.6) 42%, rgba(17,29,39,0) 75%), linear-gradient(0deg, rgba(17,29,39,.85) 0%, rgba(17,29,39,0) 35%), linear-gradient(180deg, rgba(17,29,39,.8) 0%, rgba(17,29,39,0) 22%); }
+    .copy { position: absolute; left: var(--safe-x); bottom: calc(var(--safe-y) + 8vh); width: min(54vw, 1100px); }
+    .loc { color: var(--gold); letter-spacing: .28em; text-transform: uppercase; font-size: clamp(18px, 1.6vw, 34px); }
+    h1 { font-weight: 300; font-size: clamp(44px, 4.8vw, 100px); line-height: 1.04; margin: 1.4vh 0 2.2vh; letter-spacing: .01em; }
+    .blurb { font-size: clamp(22px, 1.9vw, 40px); line-height: 1.45; color: var(--gold-light); max-width: 34ch; }
+    .stats { display: flex; gap: 2.6vw 3vw; margin-top: 3vh; flex-wrap: wrap; }
+    .stat span:first-child { display: block; font-size: clamp(15px, 1.2vw, 26px); letter-spacing: .2em; text-transform: uppercase; color: var(--gold); }
+    .stat span:last-child { font-size: clamp(26px, 2.4vw, 50px); }
+    .top { position: absolute; top: var(--safe-y); left: var(--safe-x); right: var(--safe-x); display: flex; justify-content: space-between; align-items: center; }
+    .brand { display: flex; align-items: center; gap: 1.2vw; font-size: clamp(18px, 1.5vw, 32px); letter-spacing: .24em; text-transform: uppercase; }
+    .brand img { height: clamp(40px, 4vw, 84px); width: auto; }
+    .cta { font-size: clamp(18px, 1.5vw, 32px); color: var(--gold); letter-spacing: .08em; }
+    .bar { position: absolute; left: var(--safe-x); right: var(--safe-x); bottom: var(--safe-y); display: flex; align-items: center; gap: 2vw; }
+    .dots { display: flex; gap: 1vw; }
+    .dot { width: 3.2vw; height: .7vh; min-height: 4px; background: rgba(255,255,255,.28); border-radius: 4px; overflow: hidden; position: relative; }
+    .dot i { position: absolute; inset: 0; background: var(--gold); transform-origin: left; transform: scaleX(0); }
+    .dot.done i { transform: scaleX(1); }
+    .dot.run i { animation: fill var(--dur, 14s) linear forwards; }
+    .paused .dot.run i { animation-play-state: paused; }
+    @keyframes fill { to { transform: scaleX(1); } }
+    .hint { margin-left: auto; font-size: clamp(14px, 1.15vw, 24px); color: rgba(255,255,255,.65); letter-spacing: .06em; }
+    .hint b { color: var(--gold); font-weight: 600; }
+    .pause { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: clamp(30px, 3vw, 64px); letter-spacing: .3em; text-transform: uppercase; padding: 1.4vh 2.6vw; background: rgba(17,29,39,.8); border: 2px solid var(--gold); color: var(--gold); opacity: 0; transition: opacity .3s; }
+    .paused .pause { opacity: 1; }
+    .detail .blurb { display: none; }
+    .extra { display: none; margin-top: 3vh; font-size: clamp(20px, 1.7vw, 36px); line-height: 1.5; color: var(--white); max-width: 36ch; }
+    .detail .extra { display: block; }
+    .detail .stats { margin-top: 2vh; }
+    .outro { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; background: var(--navy-deep); opacity: 0; transition: opacity 1s ease; pointer-events: none; padding: 0 var(--safe-x); }
+    .outro.on { opacity: 1; }
+    .outro img { height: 14vh; margin-bottom: 4vh; }
+    .outro h2 { font-weight: 300; font-size: clamp(48px, 5.4vw, 112px); line-height: 1.1; }
+    .outro p { margin-top: 3vh; color: var(--gold); font-size: clamp(24px, 2.3vw, 50px); letter-spacing: .06em; }
+    .outro small { margin-top: 2vh; color: var(--gold-light); font-size: clamp(20px, 1.8vw, 38px); }
+    @media (prefers-reduced-motion: reduce) { .slide img, .slide.on img { transform: none; transition: none; } .slide { transition-duration: .2s; } }
+  </style>
+</head>
+<body>
+  <div id="stage"></div>
+  <div class="shade"></div>
+  <div class="top">
+    <div class="brand"><img src="logo-icon.png" alt="" />Island Dream Collective</div>
+    <div class="cta">islanddreamcollective.com</div>
+  </div>
+  <div class="copy" id="copy"></div>
+  <div class="bar"><div class="dots" id="dots"></div><div class="hint"><b>&#9664; &#9654;</b> change villa &nbsp;&nbsp; <b>&#9650;</b> details &nbsp;&nbsp; <b>OK</b> pause</div></div>
+  <div class="pause">Paused</div>
+
+<script>
+var SLIDES = [
+  { loc: "Canggu, Bali", name: "Casa de Loto",
+    img: "https://l.icdbcdn.com/oh/1db682f0-ad0f-4f90-a979-878327ff59eb.jpg?w=1920",
+    fallback: "logo.png",
+    blurb: "A design-led two-bedroom hideaway with a sculpted private pool and a rooftop terrace.",
+    extra: "Two en-suite king bedrooms, a fully equipped kitchen, daily housekeeping and self check-in. Finns Beach Club is a 5-minute ride away.",
+    stats: [["Bedrooms", "2"], ["Guests", "Up to 4"], ["From", "Rp 2.400.000 / night"]],
+    url: "balivillabookings.com/casa-de-loto" },
+  { loc: "Uluwatu, Bali", name: "Unite By The Sea",
+    img: "unite-by-the-sea-hero.jpg",
+    blurb: "A private four-bedroom pool villa for families and groups, with two living rooms and a 10-seat dining table.",
+    extra: "Four en-suite bedrooms, 200 Mbps Wi-Fi, daily housekeeping and self check-in. Most Uluwatu beaches are about 10 minutes away.",
+    stats: [["Bedrooms", "4"], ["Guests", "Up to 8"], ["From", "Rp 3.750.000 / night"]],
+    url: "balivillabookings.com/unite-by-the-sea" },
+  { loc: "Nyang Nyang, Uluwatu", name: "Temple of Tides",
+    img: "temple-of-tides-hero.jpg",
+    blurb: "A light-filled Mediterranean-style loft villa for two, 400m from Nyang Nyang Beach.",
+    extra: "Private courtyard with plunge pool, king loft bedroom, air-conditioning, daily housekeeping and self check-in. Our newest addition.",
+    stats: [["Bedrooms", "1 (loft)"], ["Guests", "Up to 2"], ["To the beach", "400m"]],
+    url: "balivillabookings.com/temple-of-tides" }
+];
+var DUR = 14000;
+var stage = document.getElementById("stage"), copy = document.getElementById("copy"), dots = document.getElementById("dots");
+var cur = -1, timer = null, paused = false, detail = false, outroOn = false;
+
+function esc(t) { return String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;"); }
+
+SLIDES.forEach(function (s) {
+  var d = document.createElement("div"); d.className = "slide";
+  var img = new Image(); img.alt = ""; img.src = s.img;
+  img.onerror = function () { if (s.fallback) img.src = s.fallback; };
+  d.appendChild(img); stage.appendChild(d);
+  var dot = document.createElement("div"); dot.className = "dot"; dot.innerHTML = "<i></i>"; dots.appendChild(dot);
+});
+var outro = document.createElement("div"); outro.className = "outro";
+outro.innerHTML = '<img src="logo-icon.png" alt="" /><h2>Boutique villa management across Bali</h2><p>Flat 20% fee. No setup costs. Live owner dashboard.</p><small>islanddreamcollective.com</small>';
+document.body.appendChild(outro);
+var dotEls = dots.children, slideEls = stage.children;
+dots.style.setProperty("--dur", DUR / 1000 + "s");
+var outroDot = document.createElement("div"); outroDot.className = "dot"; outroDot.innerHTML = "<i></i>"; dots.appendChild(outroDot);
+
+function show(i) {
+  var total = SLIDES.length + 1;
+  cur = (i + total) % total;
+  outroOn = cur === SLIDES.length;
+  for (var k = 0; k < slideEls.length; k++) slideEls[k].classList.toggle("on", k === cur);
+  outro.classList.toggle("on", outroOn);
+  for (var j = 0; j < dotEls.length; j++) {
+    dotEls[j].className = "dot" + (j < cur ? " done" : "") + (j === cur ? " run" : "");
+  }
+  void dots.offsetWidth;
+  if (outroOn) { copy.innerHTML = ""; }
+  else {
+    var s = SLIDES[cur];
+    copy.innerHTML = '<div class="loc">' + esc(s.loc) + "</div><h1>" + esc(s.name) + '</h1><p class="blurb">' + esc(s.blurb) + '</p><p class="extra">' + esc(s.extra) + '</p><div class="stats">' +
+      s.stats.map(function (x) { return '<div class="stat"><span>' + esc(x[0]) + "</span><span>" + esc(x[1]) + "</span></div>"; }).join("") + "</div>" +
+      '<p class="loc" style="margin-top:3vh;letter-spacing:.08em;text-transform:none">' + esc(s.url) + "</p>";
+  }
+  document.body.classList.toggle("detail", detail && !outroOn);
+  arm();
+}
+function arm() {
+  clearTimeout(timer);
+  if (paused) return;
+  timer = setTimeout(function () { show(cur + 1); }, detail ? DUR * 1.6 : DUR);
+}
+function setPaused(p) {
+  paused = p; document.body.classList.toggle("paused", p);
+  if (p) clearTimeout(timer); else show(cur);
+}
+
+document.addEventListener("keydown", function (e) {
+  var k = e.key;
+  if (k === "ArrowRight" || k === "MediaTrackNext" || k === "MediaFastForward") show(cur + 1);
+  else if (k === "ArrowLeft" || k === "MediaTrackPrevious" || k === "MediaRewind") show(cur - 1);
+  else if (k === "ArrowUp") { detail = true; show(cur); }
+  else if (k === "ArrowDown") { detail = false; show(cur); }
+  else if (k === "Enter" || k === " " || k === "MediaPlayPause" || k === "MediaPlay" || k === "MediaPause") { e.preventDefault(); setPaused(!paused); }
+  else return;
+  e.preventDefault();
+});
+
+/* Keep the screen awake while presenting; fine if the device refuses */
+try { if (navigator.wakeLock) navigator.wakeLock.request("screen").catch(function () {}); } catch (e) {}
+
+show(0);
+</script>
+</body>
+</html>
