@@ -1,16 +1,19 @@
 # Island Dream Collective — Bali Villa Management
 
-> Boutique villa management company operating in Canggu and Uluwatu, Bali.
+> Boutique villa management company covering Bali: Canggu (including Berawa), Uluwatu, Seminyak, Ubud, Sanur, Jimbaran and Nusa Dua.
 
 ## About
 Island Dream Collective (IDC) is an Australian-owned boutique villa management company based in Bali, Indonesia. Founded by Steve and Tara Hawley, IDC specialises in managing luxury private villas for overseas owners, handling everything from bookings and guest communications to cleaning, maintenance and owner reporting.
 
 ## Services
-- Full villa management (20% flat fee, no setup costs)
+- Full villa management: a flat 20% fee on the revenue received after booking-platform commissions (Airbnb, Booking.com), no setup costs. Cleaning supplies, maintenance and other third-party costs are passed through at cost.
 - Multi-platform listing (Airbnb, Booking.com, direct booking)
 - Guest communications and check-in/check-out management
 - Cleaning, linen and maintenance coordination
-- Owner dashboard with real-time booking and revenue reporting
+- Owner dashboard (hostOPZ, https://hostopz.com) with live bookings, revenue, itemised expenses with receipts and monthly owner statements
+- Monthly (long-term) rental management
+- Buyer's service for people buying a villa in Bali: zoning, title, lease and permit checks
+- Help for owners switching from another manager, planned so existing bookings and reviews are protected
 - Furnishing and styling consultation
 
 ## Managed Properties
@@ -22,12 +25,13 @@ Island Dream Collective (IDC) is an Australian-owned boutique villa management c
 - Website: https://www.islanddreamcollective.com
 - Email: hello@islanddreamcollective.com
 - WhatsApp: +61433175444
-- Locations: Canggu, Uluwatu, Seminyak, Ubud, Sanur, Jimbaran and Nusa Dua, Bali, Indonesia
+- Locations: Canggu and Berawa, Uluwatu, Seminyak, Ubud, Sanur, Jimbaran and Nusa Dua, Bali, Indonesia
 
 ## Key Pages
 - https://www.islanddreamcollective.com/ — Homepage
 - https://www.islanddreamcollective.com/services.html — Services
 - https://www.islanddreamcollective.com/villa-management-canggu.html — Villa management in Canggu
+- https://www.islanddreamcollective.com/villa-management-berawa.html — Villa management in Berawa
 - https://www.islanddreamcollective.com/villa-management-uluwatu.html — Villa management in Uluwatu
 - https://www.islanddreamcollective.com/villa-management-seminyak.html — Villa management in Seminyak
 - https://www.islanddreamcollective.com/villa-management-ubud.html — Villa management in Ubud
@@ -35,6 +39,7 @@ Island Dream Collective (IDC) is an Australian-owned boutique villa management c
 - https://www.islanddreamcollective.com/villa-management-jimbaran-nusa-dua.html — Villa management in Jimbaran and Nusa Dua
 - https://www.islanddreamcollective.com/villa-management-bali.html — All areas we cover in Bali
 - https://www.islanddreamcollective.com/portfolio.html — Portfolio
+- https://www.islanddreamcollective.com/monthly-rentals.html — Monthly rentals
 - https://www.islanddreamcollective.com/list-your-villa.html — List your villa
 - https://www.islanddreamcollective.com/buy-a-villa.html — Buying a villa in Bali: buyer's agent, villa checks and a free zoning check
 - https://www.islanddreamcollective.com/about.html — About
