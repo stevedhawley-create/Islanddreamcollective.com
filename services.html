@@ -200,101 +200,13 @@
   </section>
 
 
-  <!-- EARNINGS CALCULATOR -->
-  <section class="section">
-    <div class="container" style="max-width:760px">
-      <div class="section-header">
-        <p class="section-eyebrow">Earnings Calculator</p>
-        <h2 class="section-title">What could your villa earn?</h2>
-        <p class="section-body">Adjust the sliders to get a rough estimate of what your villa could generate under IDC management — and what you'd take home after our 20% fee.</p>
-      </div>
-
-      <div style="background:#fff;border-radius:16px;padding:40px;box-shadow:0 4px 24px rgba(28,43,58,.08);margin-top:40px">
-
-        <div style="margin-bottom:28px">
-          <label style="font-size:13px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.8px;display:block;margin-bottom:8px">Nightly rate (IDR)</label>
-          <div style="display:flex;align-items:center;gap:16px">
-            <input type="range" id="calc-rate" min="1000000" max="10000000" step="100000" value="3000000"
-              oninput="calcUpdate()" style="flex:1;accent-color:#1C4F7A"/>
-            <span id="calc-rate-val" style="font-weight:700;color:#1C2B3A;font-size:1.1rem;min-width:110px;text-align:right">Rp 3.000.000</span>
-          </div>
-        </div>
-
-        <div style="margin-bottom:28px">
-          <label style="font-size:13px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.8px;display:block;margin-bottom:8px">Occupancy rate</label>
-          <div style="display:flex;align-items:center;gap:16px">
-            <input type="range" id="calc-occ" min="40" max="95" step="5" value="75"
-              oninput="calcUpdate()" style="flex:1;accent-color:#1C4F7A"/>
-            <span id="calc-occ-val" style="font-weight:700;color:#1C2B3A;font-size:1.1rem;min-width:50px;text-align:right">75%</span>
-          </div>
-        </div>
-
-        <div class="calc-results" style="background:var(--navy,#1C2B3A);border-radius:12px;padding:28px 32px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;margin-top:8px">
-          <div style="text-align:center">
-            <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:rgba(255,255,255,0.5);margin-bottom:8px">Gross annual revenue</div>
-            <div id="calc-gross" style="font-family:'Fraunces',serif;font-size:1.4rem;font-weight:500;color:#fff">Rp 821.250.000</div>
-          </div>
-          <div style="text-align:center;border-left:1px solid rgba(255,255,255,0.1);border-right:1px solid rgba(255,255,255,0.1)">
-            <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:rgba(255,255,255,0.5);margin-bottom:8px">IDC fee (20%)</div>
-            <div id="calc-fee" style="font-family:'Fraunces',serif;font-size:1.4rem;font-weight:500;color:rgba(255,255,255,0.6)">Rp 164.250.000</div>
-          </div>
-          <div style="text-align:center">
-            <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:rgba(255,255,255,0.5);margin-bottom:8px">Your annual income</div>
-            <div id="calc-owner" style="font-family:'Fraunces',serif;font-size:1.4rem;font-weight:500;color:var(--gold,#C9A96E)">Rp 657.000.000</div>
-          </div>
-        </div>
-
-        <p style="font-size:12px;color:#aaa;text-align:center;margin-top:16px">Estimate only. Our 20% fee is calculated on revenue received after booking-platform commissions, and this calculator applies it to the full nightly rate, so your actual fee will be a little lower. Actual results depend on villa, location, seasonality and market conditions. IDC targets 75–85% occupancy for managed properties.</p>
-
-        <div style="text-align:center;margin-top:24px">
-          <a href="list-your-villa.html" class="btn-gold">Get a tailored projection for your villa</a>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <script>
-  function calcUpdate() {
-    var rate = parseInt(document.getElementById('calc-rate').value);
-    var occ = parseInt(document.getElementById('calc-occ').value);
-    var gross = Math.round(rate * (occ/100) * 365);
-    var fee = Math.round(gross * 0.20);
-    var owner = gross - fee;
-    function fmt(n) {
-      return 'Rp ' + n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-    }
-    document.getElementById('calc-rate-val').textContent = fmt(rate);
-    document.getElementById('calc-occ-val').textContent = occ + '%';
-    document.getElementById('calc-gross').textContent = fmt(gross);
-    document.getElementById('calc-fee').textContent = fmt(fee);
-    document.getElementById('calc-owner').textContent = fmt(owner);
-  }
-  calcUpdate();
-  </script>
-
-
   <!-- FEE CALLOUT -->
   <section class="section section-sand">
     <div class="container-narrow" style="text-align:center">
       <p class="section-eyebrow">Our fee</p>
       <h2 class="section-title">Simple, transparent pricing.</h2>
       <p class="section-body">We charge a flat <strong>20% management fee</strong> on the revenue received, after booking-platform commissions. No setup costs, no hidden fees, no surprises. We only make money when your villa makes money.</p>
-      <div id="fee-example" style="text-align:left;background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:28px 30px;margin:32px auto 0;max-width:680px">
-        <h3 style="font-size:1.2rem;margin-bottom:14px;color:var(--navy)">How the fee works: an example</h3>
-        <p style="color:#555;line-height:1.7;margin-bottom:12px">Take a booking of <strong>US$1,000</strong> where the booking platform keeps about 17% (<strong>US$170</strong>). That leaves <strong>US$830</strong> reaching the villa.</p>
-        <p style="color:#555;line-height:1.7;margin-bottom:12px">Our fee is 20% of the US$830 received: <strong>US$166</strong>, or 16.6% of the booking. You never pay us a fee on money the platform keeps.</p>
-        <p style="color:#555;line-height:1.7;margin-bottom:18px">Fees quoted on the full booking and fees quoted on money received are different things, so compare like for like. For example, 15% of the full booking is US$150, which is about 18% of the US$830 that reaches the villa.</p>
-        <table style="width:100%;border-collapse:collapse;font-size:0.92rem;color:#444">
-          <thead><tr style="text-align:left;border-bottom:1px solid #e8e2d9"><th style="padding:8px 6px;font-weight:600">Platform commission</th><th style="padding:8px 6px;font-weight:600">Our 20% fee on US$1,000</th><th style="padding:8px 6px;font-weight:600">As a share of the booking</th></tr></thead>
-          <tbody>
-            <tr style="border-bottom:1px solid #f0ebe2"><td style="padding:8px 6px">17%</td><td style="padding:8px 6px">US$166</td><td style="padding:8px 6px">16.6%</td></tr>
-            <tr style="border-bottom:1px solid #f0ebe2"><td style="padding:8px 6px">15.5%</td><td style="padding:8px 6px">US$169</td><td style="padding:8px 6px">16.9%</td></tr>
-            <tr><td style="padding:8px 6px">3%</td><td style="padding:8px 6px">US$194</td><td style="padding:8px 6px">19.4%</td></tr>
-          </tbody>
-        </table>
-        <p style="font-size:0.82rem;color:#888;margin-top:12px">Commissions vary by platform and by how a listing is set up, so your own figures will differ. Cleaning supplies, maintenance and other third-party costs are passed through at cost.</p>
-      </div>
-      <a href="list-your-villa.html" class="btn-gold" style="margin-top:24px;display:inline-block">See what your villa could earn →</a>
+      <a href="list-your-villa.html" class="btn-gold" style="margin-top:24px;display:inline-block">Tell us about your villa →</a>
     </div>
   </section>
 
