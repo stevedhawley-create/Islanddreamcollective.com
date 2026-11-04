@@ -209,7 +209,7 @@ svg text{fill:var(--mute);font-family:var(--font);font-size:11px}
     ]},
     {id:"sell",title:"Hold and sell",total:"sellTotal",fields:[
       {k:"hold",l:"Years you hold it",t:"n",min:1,max:30,step:1,d:12,u:"years"},
-      {k:"valGrow",l:"Price growth for the same lease",t:"p",min:-5,max:15,step:0.5,d:3,u:"% a year"},
+      {k:"valGrow",l:"Villa price change a year",t:"p",min:-8,max:8,step:0.5,d:0,u:"% a year. You own the lease, not the land. The land rise goes to the landowner, the building ages and new villas keep being built"},
       {k:"leaseEff",l:"How much of the lease used up comes off the price",t:"p",min:0,max:100,step:5,d:50,u:"% (100 = straight line)"},
       {k:"sellCost",l:"Selling costs",t:"p",min:0,max:15,step:0.5,d:4,u:"% of sale price"},
       {k:"cgt",l:"Tax on the sale profit",t:"p",min:0,max:40,step:0.5,d:0,u:"% of profit"},
@@ -375,6 +375,7 @@ svg text{fill:var(--mute);font-family:var(--font);font-size:11px}
     fl+='<span class="flag">Running costs '+Math.round(runShare*100)+'% of revenue</span>';
     fl+='<span class="flag">You keep '+Math.round(y.keep/Math.max(y.rev,1)*100)+' of every 100 booked</span>';
     if(c.leaseLeftAtSale<15)fl+='<span class="flag">Only '+c.leaseLeftAtSale+' years of lease left at sale</span>';
+    if(S.valGrow>3)fl+='<span class="flag">Bali price growth above 3% a year is hard to justify on a leasehold villa</span>';
     if(S.occ>80)fl+='<span class="flag">Occupancy above 80% is hard to hold</span>';
     $("flags").innerHTML=fl;
     $("hold-h").textContent="If you hold "+c.N+" years and sell";
@@ -587,6 +588,7 @@ svg text{fill:var(--mute);font-family:var(--font);font-size:11px}
   function boot(){
     try{var raw=localStorage.getItem("villaROI");if(raw)apply(JSON.parse(raw));}catch(e){}
     try{if(location.hash.indexOf("#s=")===0){var sh=JSON.parse(decodeURIComponent(atob(location.hash.slice(3))));apply({S:sh.S,FX:sh.FX,CUR:sh.CUR});holdSave=true;["input","change"].forEach(function(ev){document.addEventListener(ev,function(){holdSave=false;},true);});$("saveStatus").textContent="Loaded the numbers from the link.";}}catch(e){}
+    try{if(!localStorage.getItem("villaROIv2")){if(raw)S.valGrow=0;localStorage.setItem("villaROIv2","1");}}catch(e){}
     buildLeft();stdWire();buildFx();sync();update();
   }
 
