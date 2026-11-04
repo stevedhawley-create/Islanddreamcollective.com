@@ -216,8 +216,13 @@ svg text{fill:var(--mute);font-family:var(--font);font-size:11px}
       {k:"itax",l:"Income tax on yearly profit",t:"p",min:0,max:45,step:0.5,d:0,u:"% (0 = ignore)"}
     ]},
     {id:"au",title:"Australian comparison",total:"auTotal",fields:[
-      {k:"cash",l:"RBA cash rate",t:"p",min:0,max:12,step:0.05,d:4.6,u:"% (check the latest decision)"},
-      {k:"margin",l:"Bank margin on top of the cash rate",t:"p",min:0,max:4,step:0.05,d:2,u:"% (banks do not lend at the cash rate; 0 = literally the cash rate)"},
+      {k:"auBank",l:"Loan rate to use",t:"n",min:0,max:5,step:1,d:5,u:"Investment loan, principal and interest, variable"},
+      {k:"cbaR",l:"CommBank",t:"p",min:3,max:12,step:0.05,d:6.45,u:"% indicative, check the bank"},
+      {k:"wbcR",l:"Westpac",t:"p",min:3,max:12,step:0.05,d:6.85,u:"% indicative, check the bank"},
+      {k:"nabR",l:"NAB",t:"p",min:3,max:12,step:0.05,d:7.2,u:"% indicative, check the bank"},
+      {k:"anzR",l:"ANZ",t:"p",min:3,max:12,step:0.05,d:7.0,u:"% estimate, check the bank"},
+      {k:"cash",l:"RBA cash rate (used only for the cash rate option)",t:"p",min:0,max:12,step:0.05,d:4.85,u:"% (raised on 3 November 2026)"},
+      {k:"margin",l:"Bank margin on top of the cash rate",t:"p",min:0,max:4,step:0.05,d:2,u:"% (used only for the cash rate option; 0 = literally the cash rate)"},
       {k:"loanYrs",l:"Loan term",t:"n",min:10,max:40,step:1,d:30,u:"years, principal and interest"},
       {k:"auStamp",l:"Stamp duty and buying costs",t:"p",min:0,max:8,step:0.1,d:4.5,u:"% of price, paid from the same money as the deposit"},
       {k:"auYield",l:"Rent a year (6 or 12 month lease)",t:"p",min:1,max:9,step:0.1,d:4,u:"% of price"},
@@ -305,6 +310,9 @@ svg text{fill:var(--mute);font-family:var(--font);font-size:11px}
         r.innerHTML='<div class="h"><label for="n-'+f.k+'">'+f.l+'</label><span class="v" id="v-'+f.k+'"></span></div>'+
           '<div class="ctl"><input type="range" id="r-'+f.k+'" min="'+f.min+'" max="'+f.max+'" step="'+f.step+'" aria-label="'+f.l+' slider">'+
           '<input type="number" id="n-'+f.k+'" inputmode="decimal" step="any"></div>'+(f.u?'<small>'+f.u+'</small>':'');
+        if(f.k==="auBank"){
+          r.innerHTML='<div class="h"><label for="n-auBank">'+f.l+'</label></div><div style="margin-top:6px"><select id="n-auBank" style="width:100%"><option value="5">Average of the big four</option><option value="1">CommBank</option><option value="2">Westpac</option><option value="3">NAB</option><option value="4">ANZ</option><option value="0">Cash rate plus my margin</option></select></div><small>'+f.u+'</small>';
+        }
         b.appendChild(r);
       });
       d.appendChild(b);L.appendChild(d);
@@ -315,11 +323,12 @@ svg text{fill:var(--mute);font-family:var(--font);font-size:11px}
       cb.insertBefore(sd,cb.firstChild);}
     ALL.forEach(function(f){
       var r=$("r-"+f.k),n=$("n-"+f.k);
-      r.addEventListener("input",function(){S[f.k]=parseFloat(r.value);sync(f.k);update();});
+      if(r)r.addEventListener("input",function(){S[f.k]=parseFloat(r.value);sync(f.k);update();});
+      if(f.k==="auBank")n.addEventListener("change",function(){S[f.k]=parseFloat(n.value);update();});
       n.addEventListener("input",function(){
         var v=parseFloat(n.value);if(!isFinite(v))return;
         S[f.k]=f.t==="m"?v*FX[CUR]:v;
-        var rr=Math.min(f.max,Math.max(f.min,S[f.k]));r.value=rr;$("v-"+f.k).textContent=valText(f);update();
+        var rr=Math.min(f.max,Math.max(f.min,S[f.k]));if(r)r.value=rr;var vv=$("v-"+f.k);if(vv)vv.textContent=valText(f);update();
       });
     });
   }
@@ -333,12 +342,12 @@ svg text{fill:var(--mute);font-family:var(--font);font-size:11px}
     ALL.forEach(function(f){
       if(k&&f.k!==k)return;
       var r=$("r-"+f.k),n=$("n-"+f.k);
-      r.value=Math.min(f.max,Math.max(f.min,S[f.k]));
+      if(r)r.value=Math.min(f.max,Math.max(f.min,S[f.k]));
       if(document.activeElement!==n){
         var dv=disp(S[f.k]);
         n.value=f.t==="m"?String(Math.abs(dv)>=100?Math.round(dv):Math.round(dv*100)/100):String(Math.round(S[f.k]*100)/100);
       }
-      $("v-"+f.k).textContent=valText(f);
+      var ve=$("v-"+f.k);if(ve)ve.textContent=valText(f);
     });
   }
 
@@ -435,10 +444,17 @@ svg text{fill:var(--mute);font-family:var(--font);font-size:11px}
 
 
   /* ---------- Australian comparison ---------- */
+  var BANKS=["Cash rate plus margin","CommBank","Westpac","NAB","ANZ","Average of the big four"];
+  function loanRate(s){
+    var b=Math.round(s.auBank);
+    if(b===1)return s.cbaR;if(b===2)return s.wbcR;if(b===3)return s.nabR;if(b===4)return s.anzR;
+    if(b===5)return (s.cbaR+s.wbcR+s.nabR+s.anzR)/4;
+    return s.cash+s.margin;
+  }
   function calcAu(s,invested,N){
     var costsPct=s.auStamp/100, P=invested>0?invested/(0.2+costsPct):0;
     var deposit=0.2*P, stamp=costsPct*P, loan=0.8*P;
-    var rate=(s.cash+s.margin)/100, mr=rate/12, n=Math.max(1,Math.round(s.loanYrs))*12;
+    var rate=loanRate(s)/100, mr=rate/12, n=Math.max(1,Math.round(s.loanYrs))*12;
     var pay=loan>0?(mr>0?loan*mr/(1-Math.pow(1+mr,-n)):loan/n):0;
     var bal=loan,cf=[-invested],yrs=[],on=s.auTaxOn>=0.5;
     for(var y=1;y<=N;y++){
@@ -462,7 +478,7 @@ svg text{fill:var(--mute);font-family:var(--font);font-size:11px}
   function renderAu(c){
     var a=calcAu(S,c.invested,c.N), y=a.y1;
     $("tot-au").textContent=pct(a.rate)+" loan";
-    $("auIntro").textContent="Your Bali spend of "+fmtMoney(c.invested)+" becomes the deposit and buying costs on an Australian property: 20% deposit, "+S.auStamp+"% stamp duty and costs, the rest borrowed at "+pct(a.rate)+" ("+S.cash+"% cash rate plus "+S.margin+"% bank margin).";
+    $("auIntro").textContent="Your Bali spend of "+fmtMoney(c.invested)+" becomes the deposit and buying costs on an Australian property: 20% deposit, "+S.auStamp+"% stamp duty and costs, the rest borrowed at "+pct(a.rate)+" ("+(Math.round(S.auBank)===0?S.cash+"% cash rate plus "+S.margin+"% margin":BANKS[Math.round(S.auBank)]+" investment loan, principal and interest")+").";
     var neg=function(v){return v<0?' class="neg"':'';};
     var R=function(l,b,x,cls){return '<tr'+(cls?' class="'+cls+'"':'')+'><td>'+l+'</td><td>'+b+'</td><td>'+x+'</td></tr>';};
     var bal=c.y1;
@@ -484,13 +500,13 @@ svg text{fill:var(--mute);font-family:var(--font);font-size:11px}
     if(y.cash<0)fl+='<span class="flag">In Australia the rent does not cover the loan: you top up '+fmtMoney(-y.cash)+' in year 1</span>';
     if(a.on&&S.itax===0&&S.cgt===0)fl+='<span class="flag">Bali tax is set to 0 in Hold and sell, so Australia is taxed and Bali is not</span>';
     if(!a.on)fl+='<span class="flag">Australian tax is switched off</span>';
-    if(S.margin===0)fl+='<span class="flag">Margin is 0: banks lend above the cash rate</span>';
+    if(Math.round(S.auBank)===0&&S.margin===0)fl+='<span class="flag">Margin is 0: banks lend above the cash rate</span>';
     $("auFlags").innerHTML=fl;
     var bi=c.irr,ai=a.irr,msg="";
     if(bi!==null&&ai!==null){
       msg=(ai>bi?"On these numbers Australia returns more a year ("+pct(ai)+" against "+pct(bi)+")":"On these numbers Bali returns more a year ("+pct(bi)+" against "+pct(ai)+")")+". The gap comes mostly from the loan: it lets the same money control a property about "+(a.P/Math.max(c.invested,1)).toFixed(1)+" times the size, so price growth works on more, but interest takes more of the rent. ";
     }
-    $("auNote").textContent=msg+"Tax is simplified: rental losses give no tax benefit, the sale profit is taxed after allowing for CPI on the purchase cost, and the rules are new, so check them. Growth, rent and rate figures are your own guesses.";
+    $("auNote").textContent=msg+"Tax is simplified: rental losses give no tax benefit, the sale profit is taxed after allowing for CPI on the purchase cost, and the rules are new, so check them. Growth and rent figures are your own guesses. Bank rates are indicative variable investment loan rates, principal and interest, taken from comparison sites and moved up by the 0.25 point rise the banks pass on from 13 November 2026. Your own rate depends on the loan size and what you negotiate, so check each bank.";
   }
 
   /* ---------- scenarios ---------- */
