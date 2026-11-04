@@ -147,7 +147,8 @@ svg text{fill:var(--mute);font-family:var(--font);font-size:11px}
         <div class="scroll" style="max-height:300px;overflow-y:auto"><table id="years"></table></div>
       </div>
       <div class="card pad">
-        <h2>Saved scenarios</h2>
+        <h2>Saved villas, shared with Tara</h2>
+        <div class="save" style="margin-bottom:8px"><input type="text" id="whoIn" placeholder="Your name, e.g. Steve or Tara" aria-label="Your name" maxlength="40"></div>
         <div class="save"><input type="text" id="scName" placeholder="Name this scenario, e.g. Uluwatu 3-bed" aria-label="Scenario name"><button id="saveBtn" class="primary" type="button">Save</button></div>
         <div id="scList" style="margin-top:8px"></div>
         <div class="scroll"><table id="cmp" style="margin-top:8px"></table></div>
@@ -212,6 +213,8 @@ svg text{fill:var(--mute);font-family:var(--font);font-size:11px}
   var STD_KEYS=["c_staff","c_power","c_net","c_pool","c_laundry","c_ins","c_other","maint","costGrow","plat","atax","mgmt","fees","sellCost"];
   function applyStd(){if(!STD)return;STD_KEYS.forEach(function(k){if(STD[k]!==undefined)S[k]=STD[k];});}
 
+  var META={},REMOTE=false,API="https://nwzeyivptlnnqdiliaxe.supabase.co/functions/v1/villa-workbench";
+  function wbkey(){try{return localStorage.getItem("villaROIcode")||"";}catch(e){return "";}}
   var S={},FX=Object.assign({},FX0),CUR="AUD",SCEN={},STD=null,holdSave=false,store=null,saveTimer=null;
   function defaults(){var o={};ALL.forEach(function(f){o[f.k]=f.d;});return o;}
   S=defaults();
@@ -415,10 +418,10 @@ svg text{fill:var(--mute);font-family:var(--font);font-size:11px}
     box.innerHTML="";
     names.forEach(function(nm){
       var d=document.createElement("div");d.className="sc";
-      var b=document.createElement("b");b.textContent=nm;d.appendChild(b);
+      var b=document.createElement("b");b.textContent=nm;d.appendChild(b);if(META[nm]&&META[nm].by){var sm=document.createElement("small");sm.textContent="by "+META[nm].by;sm.style.cssText="color:var(--mute);flex:1 1 auto";d.appendChild(sm);}
       var sw=document.createElement("div");sw.className="sw";
       var l=document.createElement("button");l.type="button";l.textContent="Open";l.addEventListener("click",function(){S=Object.assign(defaults(),SCEN[nm]);$("scName").value=nm;sync();update();});
-      var x=document.createElement("button");x.type="button";x.textContent="Delete";x.className="ghost";x.addEventListener("click",function(){delete SCEN[nm];renderCompare();queueSave();});
+      var x=document.createElement("button");x.type="button";x.textContent="Delete";x.className="ghost";x.addEventListener("click",function(){delete SCEN[nm];delete META[nm];renderCompare();queueSave();remoteDelete(nm);});
       sw.appendChild(l);sw.appendChild(x);d.appendChild(sw);box.appendChild(d);
     });
     var t='<thead><tr><th>Scenario</th><th>Invested</th><th>Net yield</th><th>If sold</th></tr></thead><tbody>';
@@ -432,7 +435,7 @@ svg text{fill:var(--mute);font-family:var(--font);font-size:11px}
   $("saveBtn").addEventListener("click",function(){
     var nm=$("scName").value.trim();
     if(!nm){$("saveStatus").textContent="Type a name first.";return;}
-    SCEN[nm]=Object.assign({},S);holdSave=false;
+    SCEN[nm]=Object.assign({},S);holdSave=false;META[nm]={by:who()};remotePush(nm);
     $("saveStatus").textContent="Saved “"+nm+"”.";
     renderCompare();queueSave(true);
   });
@@ -495,6 +498,35 @@ svg text{fill:var(--mute);font-family:var(--font);font-size:11px}
     var fallback=function(){window.prompt&&0;var i=document.createElement("input");i.value=url;i.style.cssText="position:fixed;left:8px;right:8px;bottom:8px;z-index:60";document.body.appendChild(i);i.select();$("saveStatus").textContent="Copy the link shown at the bottom of the screen.";i.addEventListener("blur",function(){i.remove();});};
     if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(url).then(done).catch(fallback);}else{fallback();}
   });
+
+  function who(){var v=$("whoIn").value.trim();try{if(v)localStorage.setItem("villaROIwho",v);}catch(e){}return v;}
+  function call(method,body){
+    return fetch(API,{method:method,headers:{"Content-Type":"application/json","x-wb-key":wbkey()},body:body?JSON.stringify(body):undefined}).then(function(r){
+      if(!r.ok)throw new Error("http "+r.status);return r.json();});
+  }
+  function remotePush(nm){
+    call("POST",{name:nm,data:SCEN[nm],by:who()}).then(function(){$("saveStatus").textContent="Saved \u201c"+nm+"\u201d for both of you.";}).catch(function(){$("saveStatus").textContent="Saved on this phone only. Could not reach the shared list.";});
+  }
+  function remoteDelete(nm){call("DELETE",{name:nm}).catch(function(){});}
+  var firstSync=true;
+  function syncRemote(){
+    call("GET").then(function(res){
+      var remote={},names={};
+      (res.scenarios||[]).forEach(function(r){remote[r.name]=r.data;names[r.name]={by:r.saved_by,at:r.updated_at};});
+      if(firstSync){
+        firstSync=false;
+        Object.keys(SCEN).forEach(function(nm){
+          if(!remote[nm]){remote[nm]=SCEN[nm];names[nm]={by:who()};call("POST",{name:nm,data:SCEN[nm],by:who()}).catch(function(){});}
+        });
+      }
+      SCEN=remote;META=names;REMOTE=true;renderCompare();
+    }).catch(function(){});
+  }
+  try{var w0=localStorage.getItem("villaROIwho");if(w0)$("whoIn").value=w0;}catch(e){}
+  $("whoIn").addEventListener("change",who);
+  document.addEventListener("wb-open",syncRemote);
+  setInterval(function(){if(wbkey())syncRemote();},25000);
+  document.addEventListener("visibilitychange",function(){if(document.visibilityState==="visible"&&wbkey())syncRemote();});
   window.addEventListener("pagehide",doSave);
   document.addEventListener("visibilitychange",function(){if(document.visibilityState==="hidden")doSave();});
   boot();
@@ -505,15 +537,15 @@ svg text{fill:var(--mute);font-family:var(--font);font-size:11px}
 (function(){
   var HASH="6161b2838ffa6ce17b84db3b45b4f8437855ecf43e75de2d1ad0008eaae91aa0";
   var gate=document.getElementById("gate");
-  function open(){gate.style.display="none";}
+  function open(){gate.style.display="none";document.dispatchEvent(new Event("wb-open"));}
   function hex(buf){return Array.prototype.map.call(new Uint8Array(buf),function(b){return ("0"+b.toString(16)).slice(-2);}).join("");}
   function sha(s){return crypto.subtle.digest("SHA-256",new TextEncoder().encode(s)).then(hex);}
-  try{if(localStorage.getItem("villaROIpass")===HASH){open();}}catch(e){}
+  try{var saved=localStorage.getItem("villaROIcode");if(saved){sha(saved).then(function(h){if(h===HASH)open();});}}catch(e){}
   document.getElementById("gateForm").addEventListener("submit",function(e){
     e.preventDefault();
     var v=document.getElementById("gateIn").value;
     sha(v).then(function(h){
-      if(h===HASH){try{localStorage.setItem("villaROIpass",HASH);}catch(e){}open();}
+      if(h===HASH){try{localStorage.setItem("villaROIcode",v);}catch(e){}open();}
       else{document.getElementById("gateMsg").textContent="That is not the passcode.";}
     }).catch(function(){document.getElementById("gateMsg").textContent="This browser cannot check the passcode.";});
   });
