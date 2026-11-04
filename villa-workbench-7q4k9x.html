@@ -115,7 +115,7 @@ svg text{fill:var(--mute);font-family:var(--font);font-size:11px}
     <div class="tools">
       <label for="cur" class="status">Show in</label>
       <select id="cur" aria-label="Currency"></select>
-      <button id="shareBtn" type="button">Copy link with my numbers</button><button id="resetBtn" class="ghost" type="button">Reset to examples</button>
+      <button id="shareBtn" type="button">Copy link with my numbers</button><button id="resetBtn" class="ghost" type="button">New villa, keep my standard costs</button>
     </div>
   </header>
 
@@ -209,8 +209,10 @@ svg text{fill:var(--mute);font-family:var(--font);font-size:11px}
     ]}
   ];
   var ALL=[];SECTIONS.forEach(function(s){s.fields.forEach(function(f){ALL.push(f);});});
+  var STD_KEYS=["c_staff","c_power","c_net","c_pool","c_laundry","c_ins","c_other","maint","costGrow","plat","atax","mgmt","fees","sellCost"];
+  function applyStd(){if(!STD)return;STD_KEYS.forEach(function(k){if(STD[k]!==undefined)S[k]=STD[k];});}
 
-  var S={},FX=Object.assign({},FX0),CUR="AUD",SCEN={},store=null,saveTimer=null;
+  var S={},FX=Object.assign({},FX0),CUR="AUD",SCEN={},STD=null,holdSave=false,store=null,saveTimer=null;
   function defaults(){var o={};ALL.forEach(function(f){o[f.k]=f.d;});return o;}
   S=defaults();
 
@@ -282,6 +284,10 @@ svg text{fill:var(--mute);font-family:var(--font);font-size:11px}
       });
       d.appendChild(b);L.appendChild(d);
     });
+    var cb=document.querySelector("#sec-cost .body");
+    if(cb){var sd=document.createElement("div");sd.className="row";
+      sd.innerHTML='<div class="sw" style="margin-bottom:6px"><button type="button" id="stdSave" class="primary">Save these as my standard costs</button><button type="button" id="stdLoad">Use my standard costs</button></div><p class="note" id="stdNote" style="margin:0"></p>';
+      cb.insertBefore(sd,cb.firstChild);}
     ALL.forEach(function(f){
       var r=$("r-"+f.k),n=$("n-"+f.k);
       r.addEventListener("input",function(){S[f.k]=parseFloat(r.value);sync(f.k);update();});
@@ -426,12 +432,19 @@ svg text{fill:var(--mute);font-family:var(--font);font-size:11px}
   $("saveBtn").addEventListener("click",function(){
     var nm=$("scName").value.trim();
     if(!nm){$("saveStatus").textContent="Type a name first.";return;}
-    SCEN[nm]=Object.assign({},S);
+    SCEN[nm]=Object.assign({},S);holdSave=false;
     $("saveStatus").textContent="Saved “"+nm+"”.";
     renderCompare();queueSave(true);
   });
-  $("resetBtn").addEventListener("click",function(){S=defaults();sync();update();$("saveStatus").textContent="Back to the example figures. Saved scenarios are untouched.";});
+  $("resetBtn").addEventListener("click",function(){S=defaults();applyStd();holdSave=false;sync();update();$("saveStatus").textContent=STD?"New villa: example price, rate and lease, with your standard costs. Saved scenarios are untouched.":"Back to the example figures. Saved scenarios are untouched.";});
 
+  function stdNote(){var n=$("stdNote");if(n)n.textContent=STD?"Standard costs are saved. A new villa starts with them. They cover running costs, repairs, commission, tax on bookings, management fee, notary fees and selling costs, not the price, rate or lease.":"Nothing saved yet. Set your usual costs below, then save them here so every new villa starts from them.";}
+  function stdWire(){
+    var sv=$("stdSave"),ld=$("stdLoad");
+    if(sv)sv.addEventListener("click",function(){STD={};STD_KEYS.forEach(function(k){STD[k]=S[k];});holdSave=false;stdNote();queueSave(true);$("saveStatus").textContent="Saved your standard costs.";});
+    if(ld)ld.addEventListener("click",function(){if(!STD){$("saveStatus").textContent="No standard costs saved yet.";return;}applyStd();sync();update();$("saveStatus").textContent="Loaded your standard costs.";});
+    stdNote();
+  }
   /* ---------- currency ---------- */
   function buildFx(){
     var sel=$("cur");sel.innerHTML="";
@@ -450,12 +463,14 @@ svg text{fill:var(--mute);font-family:var(--font);font-size:11px}
   $("cur").addEventListener("change",function(){CUR=$("cur").value;sync();update();});
 
   /* ---------- saving ---------- */
-  function snapshot(){return {S:S,FX:FX,CUR:CUR,SCEN:SCEN};}
+  function snapshot(){return {S:S,FX:FX,CUR:CUR,SCEN:SCEN,STD:STD};}
   function queueSave(now){
+    if(holdSave)return;
     clearTimeout(saveTimer);
     saveTimer=setTimeout(doSave,now?50:900);
   }
   function doSave(){
+    if(holdSave)return;
     var snap=snapshot();
     try{localStorage.setItem("villaROI",JSON.stringify(snap));}catch(e){}
   }
@@ -465,11 +480,12 @@ svg text{fill:var(--mute);font-family:var(--font);font-size:11px}
     if(snap.FX)FX=Object.assign({},FX0,snap.FX);
     if(snap.CUR&&FX[snap.CUR])CUR=snap.CUR;
     if(snap.SCEN)SCEN=snap.SCEN;
+    if(snap.STD)STD=snap.STD;
   }
   function boot(){
     try{var raw=localStorage.getItem("villaROI");if(raw)apply(JSON.parse(raw));}catch(e){}
-    try{if(location.hash.indexOf("#s=")===0){var sh=JSON.parse(decodeURIComponent(atob(location.hash.slice(3))));apply({S:sh.S,FX:sh.FX,CUR:sh.CUR});$("saveStatus").textContent="Loaded the numbers from the link.";}}catch(e){}
-    buildLeft();buildFx();sync();update();
+    try{if(location.hash.indexOf("#s=")===0){var sh=JSON.parse(decodeURIComponent(atob(location.hash.slice(3))));apply({S:sh.S,FX:sh.FX,CUR:sh.CUR});holdSave=true;["input","change"].forEach(function(ev){document.addEventListener(ev,function(){holdSave=false;},true);});$("saveStatus").textContent="Loaded the numbers from the link.";}}catch(e){}
+    buildLeft();stdWire();buildFx();sync();update();
   }
 
   $("shareBtn").addEventListener("click",function(){
