@@ -295,21 +295,10 @@
 <div><label for="vh-price">Home purchase price</label><input type="number" id="vh-price" min="0" inputmode="numeric"></div>
 <div><label for="vh-yield">Yearly rent, % of price (long-term lease)</label><input type="number" id="vh-yield" min="0" max="20" step="0.1"></div>
 <div><label for="vh-rate">Loan interest rate %</label><input type="number" id="vh-rate" min="0" max="20" step="0.1"></div>
-<div><label for="vh-mgmt">Letting agent fee % of rent</label><input type="number" id="vh-mgmt" min="0" max="30" step="0.5"></div>
-<div><label for="vh-cost">Other costs % of rent (rates, insurance, repairs, empty weeks)</label><input type="number" id="vh-cost" min="0" max="80" step="1"></div>
+<div><label for="vh-cost">Home costs % of rent (agent, rates, repairs, empty weeks)</label><input type="number" id="vh-cost" min="0" max="80" step="1"></div>
 <div><label for="vh-htax">Your top tax rate %</label><input type="number" id="vh-htax" min="0" max="60" step="1"></div>
-<div><label for="vh-g">Home price growth % a year</label><input type="number" id="vh-g" min="-20" max="20" step="0.5"></div>
-<div><label for="vh-bg">Bali value change % a year</label><input type="number" id="vh-bg" min="-20" max="20" step="0.5" value="3"></div>
-<div><label for="vh-bi">Bali nightly rate growth % a year</label><input type="number" id="vh-bi" min="-10" max="15" step="0.5" value="3"></div>
-<div><label for="vh-hi">Home rent growth % a year</label><input type="number" id="vh-hi" min="-10" max="15" step="0.5" value="3"></div>
-<div><label for="vh-n">Sell after (years)</label><input type="number" id="vh-n" min="1" max="30" step="1" value="12"></div>
-<div><label for="vh-lease">Bali lease length bought (years)</label><input type="number" id="vh-lease" min="1" max="99" step="1" value="30"></div>
-<div><label for="vh-cgt">Capital gains tax % on profit</label><input type="number" id="vh-cgt" min="0" max="60" step="0.5"></div>
-<div><label for="vh-ix">Cost base indexed by inflation % a year</label><input type="number" id="vh-ix" min="0" max="20" step="0.5"></div>
-<div><label for="vh-ld">Lease effect on resale price % (100 = straight line)</label><input type="number" id="vh-ld" min="0" max="100" step="5" value="50"></div>
-<div><label for="vh-sell">Selling costs %</label><input type="number" id="vh-sell" min="0" max="20" step="0.5" value="4"></div>
 </div>
-<div class="vh-tax"><input type="checkbox" id="vh-taxon"><label for="vh-taxon" style="font-size:0.9rem;text-transform:none;letter-spacing:0;font-weight:400;color:#333">Include tax (income and capital gains)</label>
+<div class="vh-tax"><input type="checkbox" id="vh-taxon"><label for="vh-taxon" style="font-size:0.9rem;text-transform:none;letter-spacing:0;font-weight:400;color:#333">Include income tax</label>
 <span style="margin-left:auto;display:flex;align-items:center;gap:6px;font-size:0.85rem;color:#666">Indonesian income tax %<input type="number" id="vh-btax" min="0" max="60" step="1" value="22" style="width:70px;padding:6px 8px;border:1px solid #d9d2c5;border-radius:8px"></span></div>
 <table class="vh-tbl">
 <tr><th></th><th>Bali villa</th><th id="vh-hname">Home</th></tr>
@@ -317,18 +306,12 @@
 <tr><td>Loan repayments a year</td><td>none</td><td id="vh-h-rep"></td></tr>
 <tr><td>Income a year, before tax</td><td id="vh-b-inc"></td><td id="vh-h-inc"></td></tr>
 <tr><td>Cash left after loan repayments</td><td id="vh-b-cash"></td><td id="vh-h-cash"></td></tr>
-<tr class="vh-key"><td>Income return, before tax</td><td id="vh-b-r"></td><td id="vh-h-r"></td></tr>
-<tr><td>Price growth a year</td><td id="vh-b-gain"></td><td id="vh-h-gain"></td></tr>
-<tr class="vh-key"><td>Total return incl. growth, before tax</td><td id="vh-b-t"></td><td id="vh-h-t"></td></tr>
-<tr><td>Sale price after <span class="vh-nn">12</span> years</td><td id="vh-b-sale"></td><td id="vh-h-sale"></td></tr>
-<tr><td>Total profit after selling<span class="vh-hint2"> (all income + sale, after loan and costs)</span></td><td id="vh-b-prof"></td><td id="vh-h-prof"></td></tr>
-<tr class="vh-key"><td>Average return a year if sold</td><td id="vh-b-irr"></td><td id="vh-h-irr"></td></tr>
+<tr class="vh-key"><td>Return on money put in, before tax</td><td id="vh-b-r"></td><td id="vh-h-r"></td></tr>
 <tr id="vh-taxrow1" style="display:none"><td>Income tax</td><td id="vh-b-tax"></td><td id="vh-h-tax"></td></tr>
-<tr id="vh-taxrow2" class="vh-key" style="display:none"><td>Income return, after income tax</td><td id="vh-b-ra"></td><td id="vh-h-ra"></td></tr>
-<tr id="vh-taxrow3" class="vh-key" style="display:none"><td>Total return incl. growth, after income tax</td><td id="vh-b-ta"></td><td id="vh-h-ta"></td></tr>
+<tr id="vh-taxrow2" class="vh-key" style="display:none"><td>Return on money put in, after tax</td><td id="vh-b-ra"></td><td id="vh-h-ra"></td></tr>
 </table>
 <p class="vc-hint" id="vh-note" style="margin-top:12px;line-height:1.6"></p>
-<p style="font-size:0.78rem;color:#888;line-height:1.6;margin:10px 0 0">Illustration only, not financial or tax advice. Home figures are general examples, not live market data. If sold, income and costs rise each year at the growth rates shown (the table's income rows show the first year), the Bali sale price is reduced by part of the lease used up (the box above sets how much; land value in good areas can hold up the price), and selling costs come off both sales. With tax on, capital gains tax is charged on the profit from each sale at the rate shown (Australia: the 50% discount is replaced from July 2027 by indexing the purchase price for inflation, then taxing the gain at your normal rate; the rules are new and still settling, so check them), and Indonesian tax on a Bali sale is not included. Price growth is your own guess, not a forecast, and can be negative. Bali prices can rise in popular areas, but a lease loses value as the years left shrink, so check the length of the lease; capital gains tax is not included on either side. Home income is rent less running costs and loan interest. With tax on, a loss at home is not used to reduce other income, and Bali income is taxed at the Indonesian rate shown only. Your home country may also tax overseas income, usually with a credit for the Indonesian tax, so check your own position. Tax rules differ by person and change, so check yours with an adviser.</p>
+<p style="font-size:0.78rem;color:#888;line-height:1.6;margin:10px 0 0">Illustration only, not financial or tax advice. Home figures are general examples, not live market data. Returns are income only: they leave out price growth, which can be positive or negative at home and in Bali, and a Bali lease runs out. Home income is rent less running costs and loan interest. With tax on, a loss at home is not used to reduce other income, and income earned in Bali is taxed in Indonesia first, with any extra owed at your home rate. Tax rules differ by person and change, so check yours with an adviser.</p>
 </div>
 <script>
 (function(){
@@ -344,22 +327,14 @@
     $('vc-price').step=pu; $('vc-rate').step=ru; cur=nc; showHP(); calc();
   }
 
-  var HOME={AU:{n:'Australia',c:'AUD',p:900000,y:4.0,r:6.0,m:8,k:20,t:37,cg:37,ix:2.5,g:4},NZ:{n:'New Zealand',c:'NZD',p:850000,y:4.0,r:5.5,m:8,k:20,t:33,cg:0,ix:0,g:3},UK:{n:'UK',c:'GBP',p:300000,y:6.0,r:5.0,m:10,k:15,t:40,cg:24,ix:0,g:3},EU:{n:'Europe',c:'EUR',p:350000,y:4.0,r:3.8,m:8,k:17,t:40,cg:0,ix:0,g:2.5},SG:{n:'Singapore',c:'SGD',p:1500000,y:2.8,r:3.5,m:5,k:20,t:15,cg:0,ix:0,g:2.5},HK:{n:'Hong Kong',c:'HKD',p:8000000,y:3.0,r:3.8,m:5,k:20,t:15,cg:0,ix:0,g:2},OT:{n:'Home',c:'USD',p:500000,y:4.0,r:5.0,m:8,k:20,t:30,cg:0,ix:0,g:3}};
+  var HOME={AU:{n:'Australia',c:'AUD',p:900000,y:4.0,r:6.0,k:28,t:37},NZ:{n:'New Zealand',c:'NZD',p:850000,y:4.0,r:5.5,k:28,t:33},UK:{n:'UK',c:'GBP',p:300000,y:6.0,r:5.0,k:25,t:40},EU:{n:'Europe',c:'EUR',p:350000,y:4.0,r:3.8,k:25,t:40},SG:{n:'Singapore',c:'SGD',p:1500000,y:2.8,r:3.5,k:25,t:15},HK:{n:'Hong Kong',c:'HKD',p:8000000,y:3.0,r:3.8,k:25,t:15},OT:{n:'Home',c:'USD',p:500000,y:4.0,r:5.0,k:28,t:30}};
   var hpUsd=0;
-  function setCountry(){var h=HOME[$('vh-country').value];hpUsd=h.p/RATE[h.c];$('vh-yield').value=h.y;$('vh-rate').value=h.r;$('vh-mgmt').value=h.m;$('vh-cost').value=h.k;$('vh-cgt').value=h.cg;$('vh-ix').value=h.ix;$('vh-htax').value=h.t;$('vh-g').value=h.g;showHP();}
+  function setCountry(){var h=HOME[$('vh-country').value];hpUsd=h.p/RATE[h.c];$('vh-yield').value=h.y;$('vh-rate').value=h.r;$('vh-cost').value=h.k;$('vh-htax').value=h.t;showHP();}
   function showHP(){var v=hpUsd*RATE[cur];var u=cur==='IDR'?10000000:(cur==='HKD'?50000:5000);$('vh-price').value=Math.round(v/u)*u;}
-  function hcf0(c,tx){return c-tx;}
-  function irr(cf){
-    if(!(cf[0]<0))return null;
-    var lo=-0.9,hi=2,f=function(r){var v=0;for(var i=0;i<cf.length;i++)v+=cf[i]/Math.pow(1+r,i);return v;};
-    if(f(lo)<0||f(hi)>0)return null;
-    for(var k=0;k<80;k++){var m=(lo+hi)/2;if(f(m)>0)lo=m;else hi=m;}
-    return (lo+hi)/2;
-  }
   function pct(x){return (x*100).toFixed(1)+'%';}
   function cmp(price,keep){
     var h=HOME[$('vh-country').value];
-    var yd=(parseFloat($('vh-yield').value)||0)/100, ir=(parseFloat($('vh-rate').value)||0)/100, kc=((parseFloat($('vh-cost').value)||0)+(parseFloat($('vh-mgmt').value)||0))/100;
+    var yd=(parseFloat($('vh-yield').value)||0)/100, ir=(parseFloat($('vh-rate').value)||0)/100, kc=(parseFloat($('vh-cost').value)||0)/100;
     var ht=(parseFloat($('vh-htax').value)||0)/100, bt=(parseFloat($('vh-btax').value)||0)/100, taxon=$('vh-taxon').checked;
     var loan=hpUsd*0.8, dep=hpUsd*0.2, rent=hpUsd*yd, costs=rent*kc, interest=loan*ir;
     var mr=ir/12, n=360, pay=loan>0?(mr>0?loan*mr/(1-Math.pow(1+mr,-n)):loan/n):0, rep=pay*12;
@@ -369,33 +344,13 @@
     $('vh-h-rep').textContent=usd(rep);
     $('vh-b-inc').textContent=usd(keep); $('vh-h-inc').textContent=usd(hinc);
     $('vh-b-cash').textContent=usd(keep); $('vh-h-cash').textContent=usd(hcash);
-    var hg=(parseFloat($('vh-g').value)||0)/100, bg=(parseFloat($('vh-bg').value)||0)/100, hgain=hpUsd*hg, bgain=price*bg;
-    $('vh-b-gain').textContent=(bgain<0?'-':'')+usd(Math.abs(bgain)); $('vh-h-gain').textContent=(hgain<0?'-':'')+usd(Math.abs(hgain));
-    $('vh-b-t').textContent=price>0?pct((keep+bgain)/price):'-'; $('vh-h-t').textContent=dep>0?pct((hinc+hgain)/dep):'-';
     var br=price>0?keep/price:0, hr=dep>0?hinc/dep:0;
     $('vh-b-r').textContent=price>0?pct(br):'-'; $('vh-h-r').textContent=dep>0?pct(hr):'-';
-    var btx=(taxon&&keep>0)?keep*bt:0, htx=(taxon&&hinc>0)?hinc*ht:0;
-    var N=Math.max(1,Math.min(50,Math.round(parseFloat($('vh-n').value)||12))), L=Math.max(1,parseFloat($('vh-lease').value)||30), sc=(parseFloat($('vh-sell').value)||0)/100;
-    var ld=Math.max(0,Math.min(1,(parseFloat($('vh-ld').value)||0)/100)), rem=Math.max(L-N,0)/L, bsale=price*Math.pow(1+bg,N)*(1-(1-rem)*ld), hsale=hpUsd*Math.pow(1+hg,N);
-    var kk=12*N, hbal=loan>0?(mr>0?loan*Math.pow(1+mr,kk)-pay*(Math.pow(1+mr,kk)-1)/mr:loan-pay*kk):0; if(hbal<0)hbal=0;
-    var bcf=[-price],hcf=[-dep];var bi=(parseFloat($('vh-bi').value)||0)/100, hi2=(parseFloat($('vh-hi').value)||0)/100;
-    for(var y=1;y<=N;y++){var fb=Math.pow(1+bi,y-1), fh=Math.pow(1+hi2,y-1);bcf.push((keep-btx)*fb);hcf.push((rent-costs-htx)*fh-rep);}
-    var cg=(parseFloat($('vh-cgt').value)||0)/100;
-    var ixf=Math.pow(1+(parseFloat($('vh-ix').value)||0)/100,N);
-    var bcgt=taxon?Math.max(0,bsale*(1-sc)-price*ixf)*cg:0, hcgt=taxon?Math.max(0,hsale*(1-sc)-hpUsd*ixf)*cg:0;
-    bcf[N]+=bsale*(1-sc)-bcgt; hcf[N]+=hsale*(1-sc)-hbal-hcgt;
-    function sum(a){var s=0;for(var i=0;i<a.length;i++)s+=a[i];return s;}
-    var bp=sum(bcf), hp=sum(hcf);
-    var nn=document.querySelectorAll('.vh-nn');for(var q=0;q<nn.length;q++)nn[q].textContent=N;
-    $('vh-b-sale').textContent=usd(bsale); $('vh-h-sale').textContent=usd(hsale);
-    $('vh-b-prof').textContent=(bp<0?'-':'')+usd(Math.abs(bp)); $('vh-h-prof').textContent=(hp<0?'-':'')+usd(Math.abs(hp));
-    var birr=irr(bcf), hirr=irr(hcf);
-    $('vh-b-irr').textContent=(price>0&&birr!==null)?pct(birr):'-'; $('vh-h-irr').textContent=(dep>0&&hirr!==null)?pct(hirr):'-';
-    $('vh-taxrow1').style.display=$('vh-taxrow2').style.display=$('vh-taxrow3').style.display=taxon?'':'none';
+    $('vh-taxrow1').style.display=$('vh-taxrow2').style.display=taxon?'':'none';
     if(taxon){
+      var btx=keep>0?keep*Math.max(bt,ht):0, htx=hinc>0?hinc*ht:0;
       $('vh-b-tax').textContent=(btx>0?'-':'')+usd(btx); $('vh-h-tax').textContent=(htx>0?'-':'')+usd(htx);
       $('vh-b-ra').textContent=price>0?pct((keep-btx)/price):'-'; $('vh-h-ra').textContent=dep>0?pct((hinc-htx)/dep):'-';
-      $('vh-b-ta').textContent=price>0?pct((keep-btx+bgain)/price):'-'; $('vh-h-ta').textContent=dep>0?pct((hinc-htx+hgain)/dep):'-';
     }
     var msg='';
     if(price>0&&dep>0){
@@ -420,11 +375,10 @@
   }
   ['vc-price','vc-rate','vc-occ','vc-pf','vc-run'].forEach(function(id){var e=$(id);if(e){e.addEventListener('input',calc);}});
   $('vc-cur').addEventListener('change',switchCur);
-  $('vh-country').addEventListener('change',function(){var hc=HOME[$('vh-country').value].c;if($('vc-cur').value!==hc&&hc!=='USD'||$('vh-country').value==='OT'&&$('vc-cur').value!=='USD'){$('vc-cur').value=hc;switchCur();}setCountry();calc();});
+  $('vh-country').addEventListener('change',function(){setCountry();calc();});
   $('vh-price').addEventListener('input',function(){hpUsd=(parseFloat($('vh-price').value)||0)/RATE[cur];calc();});
-  ['vh-yield','vh-rate','vh-mgmt','vh-cost','vh-cgt','vh-ix','vh-htax','vh-btax','vh-g','vh-bg','vh-n','vh-bi','vh-hi','vh-lease','vh-ld','vh-sell','vh-taxon'].forEach(function(id){$(id).addEventListener('input',calc);$(id).addEventListener('change',calc);});
+  ['vh-yield','vh-rate','vh-cost','vh-htax','vh-btax','vh-taxon'].forEach(function(id){$(id).addEventListener('input',calc);$(id).addEventListener('change',calc);});
   setCountry();
-  $('vc-cur').value=HOME[$('vh-country').value].c;switchCur();
   calc();
 })();
 </script>
