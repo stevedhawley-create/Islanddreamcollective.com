@@ -146,6 +146,13 @@ svg text{fill:var(--mute);font-family:var(--font);font-size:11px}
         <h2>Year by year</h2>
         <div class="scroll" style="max-height:300px;overflow-y:auto"><table id="years"></table></div>
       </div>
+      <div class="card pad" id="auCard">
+        <h2>Same money in an Australian property</h2>
+        <p class="note" id="auIntro"></p>
+        <div class="scroll"><table id="auTbl"></table></div>
+        <div id="auFlags" style="margin-top:8px"></div>
+        <p class="note" id="auNote"></p>
+      </div>
       <div class="card pad">
         <h2>Saved villas, shared with Tara</h2>
         <div class="save" style="margin-bottom:8px"><input type="text" id="whoIn" placeholder="Your name, e.g. Steve or Tara" aria-label="Your name" maxlength="40"></div>
@@ -207,6 +214,21 @@ svg text{fill:var(--mute);font-family:var(--font);font-size:11px}
       {k:"sellCost",l:"Selling costs",t:"p",min:0,max:15,step:0.5,d:4,u:"% of sale price"},
       {k:"cgt",l:"Tax on the sale profit",t:"p",min:0,max:40,step:0.5,d:0,u:"% of profit"},
       {k:"itax",l:"Income tax on yearly profit",t:"p",min:0,max:45,step:0.5,d:0,u:"% (0 = ignore)"}
+    ]},
+    {id:"au",title:"Australian comparison",total:"auTotal",fields:[
+      {k:"cash",l:"RBA cash rate",t:"p",min:0,max:12,step:0.05,d:4.6,u:"% (check the latest decision)"},
+      {k:"margin",l:"Bank margin on top of the cash rate",t:"p",min:0,max:4,step:0.05,d:2,u:"% (banks do not lend at the cash rate; 0 = literally the cash rate)"},
+      {k:"loanYrs",l:"Loan term",t:"n",min:10,max:40,step:1,d:30,u:"years, principal and interest"},
+      {k:"auStamp",l:"Stamp duty and buying costs",t:"p",min:0,max:8,step:0.1,d:4.5,u:"% of price, paid from the same money as the deposit"},
+      {k:"auYield",l:"Rent a year (6 or 12 month lease)",t:"p",min:1,max:9,step:0.1,d:4,u:"% of price"},
+      {k:"auAgent",l:"Letting agent fee",t:"p",min:0,max:15,step:0.5,d:8,u:"% of rent"},
+      {k:"auOther",l:"Other costs: rates, insurance, repairs, empty weeks",t:"p",min:0,max:50,step:1,d:20,u:"% of rent"},
+      {k:"auRentGrow",l:"Rent growth",t:"p",min:-3,max:10,step:0.5,d:3,u:"% a year"},
+      {k:"auGrow",l:"Price growth",t:"p",min:-5,max:12,step:0.5,d:4,u:"% a year"},
+      {k:"auSell",l:"Selling costs",t:"p",min:0,max:6,step:0.1,d:2.5,u:"% of sale price"},
+      {k:"auTax",l:"Your tax rate on rent and sale profit",t:"p",min:0,max:47,step:0.5,d:37,u:"% (top marginal rate)"},
+      {k:"auCpi",l:"CPI allowance on the purchase cost for tax on the sale",t:"p",min:0,max:8,step:0.1,d:2.5,u:"% a year, no 50% discount"},
+      {k:"auTaxOn",l:"Include Australian tax (1 = yes, 0 = no)",t:"n",min:0,max:1,step:1,d:1,u:"rental losses are not used to reduce other income"}
     ]}
   ];
   var ALL=[];SECTIONS.forEach(function(s){s.fields.forEach(function(f){ALL.push(f);});});
@@ -369,6 +391,7 @@ svg text{fill:var(--mute);font-family:var(--font);font-size:11px}
     $("tot-inc").textContent=fmtMoney(y.rev)+" a year";
     $("tot-cost").textContent=fmtMoney(c.monthly)+" a month";
     $("tot-sell").textContent=c.N+" years";
+    renderAu(c);
     renderCompare();
     queueSave();
   }
@@ -408,6 +431,66 @@ svg text{fill:var(--mute);font-family:var(--font);font-size:11px}
     if(a>=1e6)return neg+p+(a/1e6).toFixed(a>=1e7?0:1)+"M";
     if(a>=1e3)return neg+p+Math.round(a/1e3)+"k";
     return neg+p+Math.round(a);
+  }
+
+
+  /* ---------- Australian comparison ---------- */
+  function calcAu(s,invested,N){
+    var costsPct=s.auStamp/100, P=invested>0?invested/(0.2+costsPct):0;
+    var deposit=0.2*P, stamp=costsPct*P, loan=0.8*P;
+    var rate=(s.cash+s.margin)/100, mr=rate/12, n=Math.max(1,Math.round(s.loanYrs))*12;
+    var pay=loan>0?(mr>0?loan*mr/(1-Math.pow(1+mr,-n)):loan/n):0;
+    var bal=loan,cf=[-invested],yrs=[],on=s.auTaxOn>=0.5;
+    for(var y=1;y<=N;y++){
+      var interest=0,princ=0;
+      for(var m=0;m<12&&bal>0;m++){var i=bal*mr,pr=Math.min(bal,pay-i);if(pr<0)pr=0;interest+=i;princ+=pr;bal-=pr;}
+      var repay=interest+princ;
+      var rent=P*s.auYield/100*Math.pow(1+s.auRentGrow/100,y-1);
+      var costs=rent*(s.auAgent+s.auOther)/100;
+      var taxable=rent-costs-interest, tax=(on&&taxable>0)?taxable*s.auTax/100:0;
+      var cash=rent-costs-repay-tax;
+      yrs.push({y:y,rent:rent,costs:costs,interest:interest,repay:repay,tax:tax,cash:cash});cf.push(cash);
+    }
+    var value=P*Math.pow(1+s.auGrow/100,N), afterSell=value*(1-s.auSell/100);
+    var base=P*(1+costsPct), indexed=base*Math.pow(1+s.auCpi/100,N);
+    var gain=Math.max(0,afterSell-indexed), cgt=on?gain*s.auTax/100:0;
+    var netSale=afterSell-cgt-bal;
+    if(N>=1)cf[N]+=netSale;
+    var total=cf.reduce(function(a,b){return a+b;},0);
+    return {P:P,deposit:deposit,stamp:stamp,loan:loan,rate:rate,pay:pay,yrs:yrs,y1:yrs[0],value:value,balance:bal,cgt:cgt,netSale:netSale,cf:cf,total:total,irr:irr(cf),multiple:invested>0?(total+invested)/invested:NaN,on:on};
+  }
+  function renderAu(c){
+    var a=calcAu(S,c.invested,c.N), y=a.y1;
+    $("tot-au").textContent=pct(a.rate)+" loan";
+    $("auIntro").textContent="Your Bali spend of "+fmtMoney(c.invested)+" becomes the deposit and buying costs on an Australian property: 20% deposit, "+S.auStamp+"% stamp duty and costs, the rest borrowed at "+pct(a.rate)+" ("+S.cash+"% cash rate plus "+S.margin+"% bank margin).";
+    var neg=function(v){return v<0?' class="neg"':'';};
+    var R=function(l,b,x,cls){return '<tr'+(cls?' class="'+cls+'"':'')+'><td>'+l+'</td><td>'+b+'</td><td>'+x+'</td></tr>';};
+    var bal=c.y1;
+    $("auTbl").innerHTML='<thead><tr><th></th><th>Bali villa</th><th>Australia</th></tr></thead><tbody>'+
+      R("Money put in",fmtMoney(c.invested),fmtMoney(c.invested))+
+      R("Property price",fmtMoney(S.price+c.extCost)+" (lease)",fmtMoney(a.P))+
+      R("Borrowed","none",fmtMoney(a.loan))+
+      R("Loan repayments a year","none",fmtMoney(a.pay*12))+
+      R("Rent or bookings, year 1",fmtMoney(bal.rev),fmtMoney(y.rent))+
+      R("Cash left after costs, loan and tax, year 1",fmtMoney(bal.cash),fmtMoney(y.cash),y.cash<0?"neg":"")+
+      R("Value at sale, year "+c.N,fmtMoney(c.sale),fmtMoney(a.value))+
+      R("Loan still owing","none",fmtMoney(a.balance))+
+      R("Tax on the sale profit",c.cgtAmt>0?"-"+fmtMoney(c.cgtAmt):"none",a.cgt>0?"-"+fmtMoney(a.cgt):"none")+
+      R("Cash back from the sale",fmtMoney(c.netSale),fmtMoney(a.netSale))+
+      R("Total profit",fmtMoney(c.total),fmtMoney(a.total),"tot")+
+      R("Money back for each 1 put in",isFinite(c.multiple)?c.multiple.toFixed(2)+"x":"-",isFinite(a.multiple)?a.multiple.toFixed(2)+"x":"-")+
+      R("Average return a year",c.irr===null?"-":pct(c.irr),a.irr===null?"-":pct(a.irr),"tot")+'</tbody>';
+    var fl="";
+    if(y.cash<0)fl+='<span class="flag">In Australia the rent does not cover the loan: you top up '+fmtMoney(-y.cash)+' in year 1</span>';
+    if(a.on&&S.itax===0&&S.cgt===0)fl+='<span class="flag">Bali tax is set to 0 in Hold and sell, so Australia is taxed and Bali is not</span>';
+    if(!a.on)fl+='<span class="flag">Australian tax is switched off</span>';
+    if(S.margin===0)fl+='<span class="flag">Margin is 0: banks lend above the cash rate</span>';
+    $("auFlags").innerHTML=fl;
+    var bi=c.irr,ai=a.irr,msg="";
+    if(bi!==null&&ai!==null){
+      msg=(ai>bi?"On these numbers Australia returns more a year ("+pct(ai)+" against "+pct(bi)+")":"On these numbers Bali returns more a year ("+pct(bi)+" against "+pct(ai)+")")+". The gap comes mostly from the loan: it lets the same money control a property about "+(a.P/Math.max(c.invested,1)).toFixed(1)+" times the size, so price growth works on more, but interest takes more of the rent. ";
+    }
+    $("auNote").textContent=msg+"Tax is simplified: rental losses give no tax benefit, the sale profit is taxed after allowing for CPI on the purchase cost, and the rules are new, so check them. Growth, rent and rate figures are your own guesses.";
   }
 
   /* ---------- scenarios ---------- */
