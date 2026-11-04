@@ -418,10 +418,11 @@
   }
   ['vc-price','vc-rate','vc-occ','vc-pf','vc-run'].forEach(function(id){var e=$(id);if(e){e.addEventListener('input',calc);}});
   $('vc-cur').addEventListener('change',switchCur);
-  $('vh-country').addEventListener('change',function(){setCountry();calc();});
+  $('vh-country').addEventListener('change',function(){var hc=HOME[$('vh-country').value].c;if($('vc-cur').value!==hc&&hc!=='USD'||$('vh-country').value==='OT'&&$('vc-cur').value!=='USD'){$('vc-cur').value=hc;switchCur();}setCountry();calc();});
   $('vh-price').addEventListener('input',function(){hpUsd=(parseFloat($('vh-price').value)||0)/RATE[cur];calc();});
   ['vh-yield','vh-rate','vh-mgmt','vh-cost','vh-cgt','vh-ix','vh-htax','vh-btax','vh-g','vh-bg','vh-n','vh-bi','vh-hi','vh-lease','vh-ld','vh-sell','vh-taxon'].forEach(function(id){$(id).addEventListener('input',calc);$(id).addEventListener('change',calc);});
   setCountry();
+  $('vc-cur').value=HOME[$('vh-country').value].c;switchCur();
   calc();
 })();
 </script>
