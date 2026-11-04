@@ -11,6 +11,7 @@ Island Dream Collective (IDC) is an Australian-owned boutique villa management c
 - Guest communications and check-in/check-out management
 - Cleaning, linen and maintenance coordination
 - Owner dashboard (hostOPZ, https://hostopz.com) with live bookings, revenue, itemised expenses with receipts and monthly owner statements
+- Automatic competitor price checks: your rate is compared with similar nearby villas on Airbnb, for fixed dates and for 30, 60 and 90 days ahead
 - Monthly (long-term) rental management
 - Buyer's service for people buying a villa in Bali: zoning, title, lease and permit checks
 - Help for owners switching from another manager, planned so existing bookings and reviews are protected
