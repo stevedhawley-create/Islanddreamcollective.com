@@ -212,7 +212,185 @@
     </div>
   </section>
 
-  <!-- PRICING -->
+  <!-- RETURNS -->
+<section class="section">
+<div class="container" style="max-width:900px">
+<div class="section-header" style="text-align:center">
+<p class="section-eyebrow">Returns</p>
+<h2 class="section-title">What could a villa return?</h2>
+<p class="section-body">Agents often quote gross yield. What matters is what you keep. Here are real examples, a calculator for your own numbers, and a quick-reference grid.</p>
+</div>
+<h3 style="margin:1.5rem 0 .5rem;color:var(--navy)">Real examples</h3>
+<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:0.95rem;min-width:560px"><tr style="border-bottom:1px solid #f0ebe2"><th style="padding:10px 8px;text-align:left">Real example</th><th style="padding:10px 8px;text-align:right">Purchase price</th><th style="padding:10px 8px;text-align:right">Booking revenue a year</th><th style="padding:10px 8px;text-align:right">Net return on the price</th></tr><tr style="border-bottom:1px solid #f0ebe2"><td style="padding:10px 8px;text-align:left;font-weight:600;">1-bedroom villa</td><td style="padding:10px 8px;text-align:right;">about US$54,000</td><td style="padding:10px 8px;text-align:right;">about US$20,000*</td><td style="padding:10px 8px;text-align:right;"><strong>about 15 to 17%*</strong></td></tr><tr style="border-bottom:1px solid #f0ebe2"><td style="padding:10px 8px;text-align:left;font-weight:600;">2-bedroom villa</td><td style="padding:10px 8px;text-align:right;">about US$100,000</td><td style="padding:10px 8px;text-align:right;">about US$33,000</td><td style="padding:10px 8px;text-align:right;"><strong>about 10 to 11%</strong></td></tr><tr style="border-bottom:1px solid #f0ebe2"><td style="padding:10px 8px;text-align:left;font-weight:600;">4-bedroom villa</td><td style="padding:10px 8px;text-align:right;">about US$166,000</td><td style="padding:10px 8px;text-align:right;">about US$35,000*</td><td style="padding:10px 8px;text-align:right;"><strong>about 7 to 8%</strong></td></tr></table></div><p style="font-size:0.85rem;color:#777;line-height:1.7;margin-top:.75rem">These are rounded figures from villas we manage. Net return is what the owner keeps after the booking platform's commission, regional accommodation tax, our 20% management fee and regular running costs, before one-off repairs and your own income tax. Furnishing and set-up costs are on top of the purchase price and are not included. *Estimates for a full year, based on bookings to date.</p>
+<!-- CALCULATOR -->
+<style>
+.vc-calc { background:#fff; border:1px solid var(--border); border-radius:var(--radius); padding:28px 30px; margin:1rem 0 0; }
+.vc-grid { display:grid; grid-template-columns:1fr 1fr; gap:32px; }
+@media (max-width:700px) { .vc-grid { grid-template-columns:1fr; gap:24px; } .vc-calc { padding:22px 18px; } }
+.vc-field { margin-bottom:18px; }
+.vc-field label { display:flex; justify-content:space-between; font-size:0.85rem; font-weight:700; color:#666; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px; }
+.vc-field label span { color:var(--navy); text-transform:none; letter-spacing:0; font-size:1rem; }
+.vc-field input[type=number] { width:100%; padding:12px 14px; font-size:1.05rem; border:1px solid #d9d2c5; border-radius:8px; font-family:inherit; box-sizing:border-box; }
+.vc-field input[type=range] { width:100%; accent-color:#1C4F7A; }
+.vc-hint { font-size:0.78rem; color:#888; margin-top:4px; }
+.vc-out table { width:100%; border-collapse:collapse; font-size:0.95rem; }
+.vc-out td { padding:9px 4px; border-bottom:1px solid #f0ebe2; }
+.vc-out td:last-child { text-align:right; font-variant-numeric:tabular-nums; }
+.vc-out tr.vc-total td { font-weight:700; color:var(--navy); border-bottom:2px solid #e8e2d9; }
+.vc-big { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:18px; }
+.vc-big div { background:var(--sand, #f5f0e8); border-radius:10px; padding:14px; text-align:center; }
+.vc-big strong { display:block; font-size:1.5rem; color:var(--navy); font-weight:500; }
+.vc-big span { font-size:0.78rem; color:#777; text-transform:uppercase; letter-spacing:0.06em; }
+</style>
+<h3 style="margin:2.5rem 0 .5rem;color:var(--navy)">Work out your own villa</h3>
+<div class="vc-calc" id="villa-calc">
+<div class="vc-grid">
+<div class="vc-in">
+<div class="vc-field"><label for="vc-cur">Currency</label><select id="vc-cur" style="width:100%;padding:12px 14px;font-size:1.05rem;border:1px solid #d9d2c5;border-radius:8px;font-family:inherit;background:#fff"><option value="USD">US dollars (USD)</option><option value="AUD">Australian dollars (AUD)</option><option value="EUR">Euros (EUR)</option><option value="GBP">British pounds (GBP)</option><option value="SGD">Singapore dollars (SGD)</option><option value="HKD">Hong Kong dollars (HKD)</option><option value="NZD">New Zealand dollars (NZD)</option><option value="IDR">Indonesian rupiah (IDR)</option></select><div class="vc-hint">Approximate rates used: US$1 = A$1.55 = €0.92 = £0.78 = S$1.30 = HK$7.80 = NZ$1.70 = Rp 18,000.</div></div>
+<div class="vc-field"><label for="vc-price">Purchase price</label><input type="number" id="vc-price" min="0" step="5000" value="250000" inputmode="numeric"></div>
+<div class="vc-field"><label for="vc-rate">Average nightly rate</label><input type="number" id="vc-rate" min="0" step="10" value="200" inputmode="numeric"><div class="vc-hint">The average you actually achieve, after discounts, not the peak rate.</div></div>
+<div class="vc-field"><label for="vc-occ">Occupancy <span id="vc-occ-v">70%</span></label><input type="range" id="vc-occ" min="30" max="95" step="5" value="70"></div>
+<div class="vc-field"><label for="vc-pf">Booking-platform commission <span id="vc-pf-v">12%</span></label><input type="range" id="vc-pf" min="0" max="20" step="1" value="12"><div class="vc-hint">About 3% for some individual hosts, and 15 to 17% for listings run through manager software.</div></div>
+<div class="vc-field"><label for="vc-run">Regular running costs <span id="vc-run-v">30%</span></label><input type="range" id="vc-run" min="15" max="45" step="1" value="30"><div class="vc-hint">Staff, electricity, laundry, pool, maintenance and supplies as a share of bookings. Our guide shows 25 to 35%.</div></div>
+</div>
+<div class="vc-out">
+<table>
+<tr><td>Booking revenue a year</td><td id="vc-gross"></td></tr>
+<tr><td>Platform commission</td><td id="vc-pfv"></td></tr>
+<tr><td>Accommodation tax (10% of what the guest pays)</td><td id="vc-tax"></td></tr>
+<tr><td>Management fee (20% of what is received)</td><td id="vc-fee"></td></tr>
+<tr><td>Regular running costs</td><td id="vc-runv"></td></tr>
+<tr class="vc-total"><td>The owner keeps</td><td id="vc-keep"></td></tr>
+</table>
+<div class="vc-big">
+<div><strong id="vc-gy">0%</strong><span>Gross yield</span></div>
+<div><strong id="vc-ny">0%</strong><span>Net return</span></div>
+</div>
+<div class="vc-hint" id="vc-pay" style="text-align:center;margin-top:12px"></div>
+</div>
+</div>
+<p style="font-size:0.8rem;color:#888;line-height:1.6;margin:18px 0 0">An illustration, not a forecast or advice. Net return is before one-off repairs and your own income tax, and furnishing is extra to the price. Accommodation tax is 10% in Badung regency; check how it applies to you.</p>
+</div>
+<!-- COMPARE -->
+<style>
+.vh-wrap{margin-top:24px;padding-top:22px;border-top:1px solid #e8e2d9}
+.vh-wrap h4{margin:0 0 4px;color:var(--navy);font-size:1.15rem}
+.vh-in{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:14px 0}
+@media (max-width:700px){.vh-in{grid-template-columns:1fr 1fr}}
+.vh-in label{display:block;font-size:0.72rem;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:5px}
+.vh-in input,.vh-in select{width:100%;padding:10px 10px;font-size:0.95rem;border:1px solid #d9d2c5;border-radius:8px;font-family:inherit;box-sizing:border-box;background:#fff}
+.vh-tbl{width:100%;border-collapse:collapse;font-size:0.92rem;margin-top:6px}
+.vh-tbl th{padding:8px 4px;text-align:right;color:var(--navy);border-bottom:2px solid #e8e2d9}
+.vh-tbl th:first-child{text-align:left}
+.vh-tbl td{padding:8px 4px;border-bottom:1px solid #f0ebe2;text-align:right;font-variant-numeric:tabular-nums}
+.vh-tbl td:first-child{text-align:left}
+.vh-tbl tr.vh-key td{font-weight:700;color:var(--navy)}
+.vh-tax{display:flex;align-items:center;gap:8px;font-size:0.9rem;margin:6px 0 0}
+</style>
+<div class="vh-wrap" id="villa-home">
+<h4>Compare with buying at home</h4>
+<p class="vc-hint" style="margin:0">Pick where you live. The home figures are examples; change any of them. Bali uses the villa you entered above, bought with cash, because foreigners can rarely borrow against a Bali lease. Home uses a normal long-term rental (a 6 or 12 month lease, not holiday letting), a 20% deposit and a 30-year loan.</p>
+<div class="vh-in">
+<div><label for="vh-country">Where you live</label><select id="vh-country"><option value="AU">Australia</option><option value="NZ">New Zealand</option><option value="UK">United Kingdom</option><option value="EU">Europe (euro)</option><option value="SG">Singapore</option><option value="HK">Hong Kong</option><option value="OT">Other</option></select></div>
+<div><label for="vh-price">Home purchase price</label><input type="number" id="vh-price" min="0" inputmode="numeric"></div>
+<div><label for="vh-yield">Yearly rent, % of price (long-term lease)</label><input type="number" id="vh-yield" min="0" max="20" step="0.1"></div>
+<div><label for="vh-rate">Loan interest rate %</label><input type="number" id="vh-rate" min="0" max="20" step="0.1"></div>
+<div><label for="vh-cost">Home costs % of rent (agent, rates, repairs, empty weeks)</label><input type="number" id="vh-cost" min="0" max="80" step="1"></div>
+<div><label for="vh-htax">Your top tax rate %</label><input type="number" id="vh-htax" min="0" max="60" step="1"></div>
+</div>
+<div class="vh-tax"><input type="checkbox" id="vh-taxon"><label for="vh-taxon" style="font-size:0.9rem;text-transform:none;letter-spacing:0;font-weight:400;color:#333">Include income tax</label>
+<span style="margin-left:auto;display:flex;align-items:center;gap:6px;font-size:0.85rem;color:#666">Indonesian income tax %<input type="number" id="vh-btax" min="0" max="60" step="1" value="22" style="width:70px;padding:6px 8px;border:1px solid #d9d2c5;border-radius:8px"></span></div>
+<table class="vh-tbl">
+<tr><th></th><th>Bali villa</th><th id="vh-hname">Home</th></tr>
+<tr><td>Money you put in</td><td id="vh-b-in"></td><td id="vh-h-in"></td></tr>
+<tr><td>Loan repayments a year</td><td>none</td><td id="vh-h-rep"></td></tr>
+<tr><td>Income a year, before tax</td><td id="vh-b-inc"></td><td id="vh-h-inc"></td></tr>
+<tr><td>Cash left after loan repayments</td><td id="vh-b-cash"></td><td id="vh-h-cash"></td></tr>
+<tr class="vh-key"><td>Return on money put in, before tax</td><td id="vh-b-r"></td><td id="vh-h-r"></td></tr>
+<tr id="vh-taxrow1" style="display:none"><td>Income tax</td><td id="vh-b-tax"></td><td id="vh-h-tax"></td></tr>
+<tr id="vh-taxrow2" class="vh-key" style="display:none"><td>Return on money put in, after tax</td><td id="vh-b-ra"></td><td id="vh-h-ra"></td></tr>
+</table>
+<p class="vc-hint" id="vh-note" style="margin-top:12px;line-height:1.6"></p>
+<p style="font-size:0.78rem;color:#888;line-height:1.6;margin:10px 0 0">Illustration only, not financial or tax advice. Home figures are general examples, not live market data. Returns are income only: they leave out price growth, which can be positive or negative at home and in Bali, and a Bali lease runs out. Home income is rent less running costs and loan interest. With tax on, a loss at home is not used to reduce other income, and income earned in Bali is taxed in Indonesia first, with any extra owed at your home rate. Tax rules differ by person and change, so check yours with an adviser.</p>
+</div>
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id);};
+  var RATE={USD:1,AUD:1.55,EUR:0.92,GBP:0.78,SGD:1.30,HKD:7.8,NZD:1.70,IDR:18000}, SYM={USD:'US$',AUD:'A$',EUR:'€',GBP:'£',SGD:'S$',HKD:'HK$',NZD:'NZ$',IDR:'Rp '}, cur='USD';
+  function usd(n){var v=n*RATE[cur];var s=Math.round(Math.abs(v)).toLocaleString('en-US');return (v<0?'-':'')+SYM[cur]+s;}
+  function switchCur(){
+    var nc=$('vc-cur').value, f=RATE[nc]/RATE[cur];
+    var rnd=function(v,u){return Math.round(v/u)*u;};
+    var pu=nc==='IDR'?10000000:(nc==='HKD'?50000:5000), ru=nc==='IDR'?50000:(nc==='HKD'?50:10);
+    $('vc-price').value=rnd((parseFloat($('vc-price').value)||0)*f,pu);
+    $('vc-rate').value=rnd((parseFloat($('vc-rate').value)||0)*f,ru);
+    $('vc-price').step=pu; $('vc-rate').step=ru; cur=nc; showHP(); calc();
+  }
+
+  var HOME={AU:{n:'Australia',c:'AUD',p:900000,y:4.0,r:6.0,k:28,t:37},NZ:{n:'New Zealand',c:'NZD',p:850000,y:4.0,r:5.5,k:28,t:33},UK:{n:'UK',c:'GBP',p:300000,y:6.0,r:5.0,k:25,t:40},EU:{n:'Europe',c:'EUR',p:350000,y:4.0,r:3.8,k:25,t:40},SG:{n:'Singapore',c:'SGD',p:1500000,y:2.8,r:3.5,k:25,t:15},HK:{n:'Hong Kong',c:'HKD',p:8000000,y:3.0,r:3.8,k:25,t:15},OT:{n:'Home',c:'USD',p:500000,y:4.0,r:5.0,k:28,t:30}};
+  var hpUsd=0;
+  function setCountry(){var h=HOME[$('vh-country').value];hpUsd=h.p/RATE[h.c];$('vh-yield').value=h.y;$('vh-rate').value=h.r;$('vh-cost').value=h.k;$('vh-htax').value=h.t;showHP();}
+  function showHP(){var v=hpUsd*RATE[cur];var u=cur==='IDR'?10000000:(cur==='HKD'?50000:5000);$('vh-price').value=Math.round(v/u)*u;}
+  function pct(x){return (x*100).toFixed(1)+'%';}
+  function cmp(price,keep){
+    var h=HOME[$('vh-country').value];
+    var yd=(parseFloat($('vh-yield').value)||0)/100, ir=(parseFloat($('vh-rate').value)||0)/100, kc=(parseFloat($('vh-cost').value)||0)/100;
+    var ht=(parseFloat($('vh-htax').value)||0)/100, bt=(parseFloat($('vh-btax').value)||0)/100, taxon=$('vh-taxon').checked;
+    var loan=hpUsd*0.8, dep=hpUsd*0.2, rent=hpUsd*yd, costs=rent*kc, interest=loan*ir;
+    var mr=ir/12, n=360, pay=loan>0?(mr>0?loan*mr/(1-Math.pow(1+mr,-n)):loan/n):0, rep=pay*12;
+    var hinc=rent-costs-interest, hcash=rent-costs-rep;
+    $('vh-hname').textContent=h.n;
+    $('vh-b-in').textContent=usd(price); $('vh-h-in').textContent=usd(dep)+' (20% deposit)';
+    $('vh-h-rep').textContent=usd(rep);
+    $('vh-b-inc').textContent=usd(keep); $('vh-h-inc').textContent=usd(hinc);
+    $('vh-b-cash').textContent=usd(keep); $('vh-h-cash').textContent=usd(hcash);
+    var br=price>0?keep/price:0, hr=dep>0?hinc/dep:0;
+    $('vh-b-r').textContent=price>0?pct(br):'-'; $('vh-h-r').textContent=dep>0?pct(hr):'-';
+    $('vh-taxrow1').style.display=$('vh-taxrow2').style.display=taxon?'':'none';
+    if(taxon){
+      var btx=keep>0?keep*Math.max(bt,ht):0, htx=hinc>0?hinc*ht:0;
+      $('vh-b-tax').textContent=(btx>0?'-':'')+usd(btx); $('vh-h-tax').textContent=(htx>0?'-':'')+usd(htx);
+      $('vh-b-ra').textContent=price>0?pct((keep-btx)/price):'-'; $('vh-h-ra').textContent=dep>0?pct((hinc-htx)/dep):'-';
+    }
+    var msg='';
+    if(price>0&&dep>0){
+      msg=br>hr?'On these numbers the Bali villa earns a higher return on the money you put in, but it is a cash purchase of '+usd(price)+', while home needs '+usd(dep)+' as a deposit.':'On these numbers home earns the higher return on the money you put in. Change the figures to match what you are really looking at.';
+      if(hcash<0)msg+=' At home the rent does not cover the loan repayments, so you would top it up by '+usd(-hcash)+' a year.';
+    }
+    $('vh-note').textContent=msg;
+  }
+  function calc(){
+    var price=Math.max(0,parseFloat($('vc-price').value)||0)/RATE[cur];
+    var rate=Math.max(0,parseFloat($('vc-rate').value)||0)/RATE[cur];
+    var occ=parseFloat($('vc-occ').value)/100, pf=parseFloat($('vc-pf').value)/100, run=parseFloat($('vc-run').value)/100;
+    $('vc-occ-v').textContent=Math.round(occ*100)+'%'; $('vc-pf-v').textContent=Math.round(pf*100)+'%'; $('vc-run-v').textContent=Math.round(run*100)+'%';
+    var gross=rate*365*occ, plat=gross*pf, received=gross-plat, tax=gross*0.10, fee=received*0.20, running=gross*run;
+    var keep=received-tax-fee-running;
+    $('vc-gross').textContent=usd(gross); $('vc-pfv').textContent='-'+usd(plat); $('vc-tax').textContent='-'+usd(tax);
+    $('vc-fee').textContent='-'+usd(fee); $('vc-runv').textContent='-'+usd(running); $('vc-keep').textContent=usd(keep);
+    $('vc-gy').textContent=price>0?(gross/price*100).toFixed(1)+'%':'-';
+    $('vc-ny').textContent=price>0?(keep/price*100).toFixed(1)+'%':'-';
+    cmp(price,keep);
+    $('vc-pay').textContent=(price>0&&keep>0)?('About '+(price/keep).toFixed(1)+' years of this income to earn back the purchase price.'):(price>0?'At these numbers the villa does not earn back its price.':'');
+  }
+  ['vc-price','vc-rate','vc-occ','vc-pf','vc-run'].forEach(function(id){var e=$(id);if(e){e.addEventListener('input',calc);}});
+  $('vc-cur').addEventListener('change',switchCur);
+  $('vh-country').addEventListener('change',function(){setCountry();calc();});
+  $('vh-price').addEventListener('input',function(){hpUsd=(parseFloat($('vh-price').value)||0)/RATE[cur];calc();});
+  ['vh-yield','vh-rate','vh-cost','vh-htax','vh-btax','vh-taxon'].forEach(function(id){$(id).addEventListener('input',calc);$(id).addEventListener('change',calc);});
+  setCountry();
+  calc();
+})();
+</script>
+<h3 style="margin:2.5rem 0 .5rem;color:var(--navy)">Quick reference: a villa booked 70% of the year</h3>
+<h3 style="margin:2rem 0 .5rem;color:var(--navy)">Gross yield: booking revenue as a share of the purchase price</h3><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:0.95rem;min-width:560px"><tr style="border-bottom:2px solid #e8e2d9"><th style="padding:10px 8px;text-align:left">Purchase price</th><th style="padding:10px 8px;text-align:right">US$100/night</th><th style="padding:10px 8px;text-align:right">US$150/night</th><th style="padding:10px 8px;text-align:right">US$200/night</th><th style="padding:10px 8px;text-align:right">US$250/night</th><th style="padding:10px 8px;text-align:right">US$300/night</th></tr><tr style="border-bottom:1px solid #f0ebe2"><td style="padding:10px 8px;font-weight:600">US$150,000</td><td style="padding:10px 8px;text-align:right;">17.0%</td><td style="padding:10px 8px;text-align:right;">25.6%</td><td style="padding:10px 8px;text-align:right;">34.1%</td><td style="padding:10px 8px;text-align:right;">42.6%</td><td style="padding:10px 8px;text-align:right;">51.1%</td></tr><tr style="border-bottom:1px solid #f0ebe2"><td style="padding:10px 8px;font-weight:600">US$250,000</td><td style="padding:10px 8px;text-align:right;">10.2%</td><td style="padding:10px 8px;text-align:right;">15.3%</td><td style="padding:10px 8px;text-align:right;">20.4%</td><td style="padding:10px 8px;text-align:right;">25.5%</td><td style="padding:10px 8px;text-align:right;">30.7%</td></tr><tr style="border-bottom:1px solid #f0ebe2"><td style="padding:10px 8px;font-weight:600">US$400,000</td><td style="padding:10px 8px;text-align:right;">6.4%</td><td style="padding:10px 8px;text-align:right;">9.6%</td><td style="padding:10px 8px;text-align:right;">12.8%</td><td style="padding:10px 8px;text-align:right;">16.0%</td><td style="padding:10px 8px;text-align:right;">19.2%</td></tr><tr style="border-bottom:1px solid #f0ebe2"><td style="padding:10px 8px;font-weight:600">US$600,000</td><td style="padding:10px 8px;text-align:right;">4.3%</td><td style="padding:10px 8px;text-align:right;">6.4%</td><td style="padding:10px 8px;text-align:right;">8.5%</td><td style="padding:10px 8px;text-align:right;">10.6%</td><td style="padding:10px 8px;text-align:right;">12.8%</td></tr><tr style="border-bottom:1px solid #f0ebe2"><td style="padding:10px 8px;font-weight:600">US$800,000</td><td style="padding:10px 8px;text-align:right;">3.2%</td><td style="padding:10px 8px;text-align:right;">4.8%</td><td style="padding:10px 8px;text-align:right;">6.4%</td><td style="padding:10px 8px;text-align:right;">8.0%</td><td style="padding:10px 8px;text-align:right;">9.6%</td></tr></table></div>
+<h3 style="margin:2rem 0 .5rem;color:var(--navy)">Net return: what the owner keeps, as a share of the purchase price</h3><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:0.95rem;min-width:560px"><tr style="border-bottom:2px solid #e8e2d9"><th style="padding:10px 8px;text-align:left">Purchase price</th><th style="padding:10px 8px;text-align:right">US$100/night</th><th style="padding:10px 8px;text-align:right">US$150/night</th><th style="padding:10px 8px;text-align:right">US$200/night</th><th style="padding:10px 8px;text-align:right">US$250/night</th><th style="padding:10px 8px;text-align:right">US$300/night</th></tr><tr style="border-bottom:1px solid #f0ebe2"><td style="padding:10px 8px;font-weight:600">US$150,000</td><td style="padding:10px 8px;text-align:right;">5.1%</td><td style="padding:10px 8px;text-align:right;">7.7%</td><td style="padding:10px 8px;text-align:right;">10.2%</td><td style="padding:10px 8px;text-align:right;">12.8%</td><td style="padding:10px 8px;text-align:right;">15.3%</td></tr><tr style="border-bottom:1px solid #f0ebe2"><td style="padding:10px 8px;font-weight:600">US$250,000</td><td style="padding:10px 8px;text-align:right;">3.1%</td><td style="padding:10px 8px;text-align:right;">4.6%</td><td style="padding:10px 8px;text-align:right;">6.1%</td><td style="padding:10px 8px;text-align:right;">7.7%</td><td style="padding:10px 8px;text-align:right;">9.2%</td></tr><tr style="border-bottom:1px solid #f0ebe2"><td style="padding:10px 8px;font-weight:600">US$400,000</td><td style="padding:10px 8px;text-align:right;">1.9%</td><td style="padding:10px 8px;text-align:right;">2.9%</td><td style="padding:10px 8px;text-align:right;">3.8%</td><td style="padding:10px 8px;text-align:right;">4.8%</td><td style="padding:10px 8px;text-align:right;">5.7%</td></tr><tr style="border-bottom:1px solid #f0ebe2"><td style="padding:10px 8px;font-weight:600">US$600,000</td><td style="padding:10px 8px;text-align:right;">1.3%</td><td style="padding:10px 8px;text-align:right;">1.9%</td><td style="padding:10px 8px;text-align:right;">2.6%</td><td style="padding:10px 8px;text-align:right;">3.2%</td><td style="padding:10px 8px;text-align:right;">3.8%</td></tr><tr style="border-bottom:1px solid #f0ebe2"><td style="padding:10px 8px;font-weight:600">US$800,000</td><td style="padding:10px 8px;text-align:right;">1.0%</td><td style="padding:10px 8px;text-align:right;">1.4%</td><td style="padding:10px 8px;text-align:right;">1.9%</td><td style="padding:10px 8px;text-align:right;">2.4%</td><td style="padding:10px 8px;text-align:right;">2.9%</td></tr></table></div>
+<p style="font-size:0.85rem;color:#777;line-height:1.7;margin-top:1.5rem"><strong>How to read the grids.</strong> Pick the nightly rate a villa realistically achieves on average, after discounts, not its peak rate, and the price you would pay. The net figures assume the owner keeps about US$30 of every US$100 booked, the middle of the range in our guide to <a href="blog-villa-running-costs.html">what it really costs to run a villa in Bali</a>. Well-run villas with controlled costs can keep more. The net return is before one-off repairs and your own income tax. If you are buying a lease, remember the lease runs out, so a lease price also needs to be recovered over its remaining years. These are illustrations, not forecasts or advice.</p>
+<p style="text-align:center;margin-top:1.5rem"><a href="#enquire" class="btn-gold">Check a villa's real income</a></p>
+</div>
+</section>
+
+<!-- PRICING -->
   <section class="section section-sand">
     <div class="container">
       <div class="section-header">
