@@ -187,6 +187,14 @@ svg text{fill:var(--mute);font-family:var(--font);font-size:11px}
         <h2 id="allH">All side by side</h2>
         <div class="scroll"><table id="triTbl"></table></div>
       </div>
+      <details class="card" id="yrsCard" open>
+        <summary>Years 1 to 25, every option <span class="tot" id="tot-yrs"></span></summary>
+        <div class="body">
+          <div class="save" style="margin:10px 0 6px"><select id="yrsView" aria-label="What to show"><option value="profit">Total profit if you sold or cashed out that year</option><option value="irr">Average return a year up to that year</option><option value="cash">Money you would hold that year, income included</option></select></div>
+          <div class="scroll" style="max-height:440px;overflow-y:auto"><table id="yrsTbl"></table></div>
+          <p class="note" id="yrsNote"></p>
+        </div>
+      </details>
       <div class="card pad">
         <h2>Saved villas, shared with Tara</h2>
         <div class="save" style="margin-bottom:8px"><input type="text" id="whoIn" placeholder="Your name, e.g. Steve or Tara" aria-label="Your name" maxlength="40"></div>
@@ -574,6 +582,35 @@ svg text{fill:var(--mute);font-family:var(--font);font-size:11px}
   }
 
 
+
+  /* ---------- years 1 to 25 ---------- */
+  function renderYears(c){
+    var view=$("yrsView").value,hasHl=S.hlBal>0;
+    var names=["Bali villa","Aus property, loan","Aus property, no loan","US shares ETF","Aus shares ETF","Term deposit"];
+    if(hasHl)names.push("Pay down home loan");
+    var h='<thead><tr><th>Year</th>'+names.map(function(n){return '<th>'+n+'</th>';}).join('')+'</tr></thead><tbody>';
+    for(var n=1;n<=25;n++){
+      var s2=Object.assign({},S,{hold:n}),b=calc(s2),inv=b.invested;
+      var res=[
+        {tot:b.total,irr:b.irr},
+        (function(){var x=calcAu(S,inv,n);return {tot:x.total,irr:x.irr};})(),
+        (function(){var x=calcPropCash(S,inv,n);return {tot:x.total,irr:x.irr};})(),
+        (function(){var x=calcEtf(S,inv,n);return {tot:x.total,irr:x.irr};})(),
+        (function(){var x=calcAusEtf(S,inv,n);return {tot:x.total,irr:x.irr};})(),
+        (function(){var x=calcTd(S,inv,n);return {tot:x.total,irr:x.irr};})()
+      ];
+      if(hasHl){var x=calcHl(S,inv,n);res.push({tot:x.total,irr:x.irr});}
+      var val=res.map(function(r){return view==="irr"?r.irr:(view==="cash"?r.tot+inv:r.tot);});
+      var best=-1,bv=-Infinity;val.forEach(function(v,i){if(v!==null&&isFinite(v)&&v>bv){bv=v;best=i;}});
+      var mine=(n===c.N);
+      h+='<tr'+(mine?' class="tot"':'')+'><td>'+n+(mine?' (your hold)':'')+'</td>'+val.map(function(v,i){
+        var txt=v===null||!isFinite(v)?"-":(view==="irr"?pct(v):fmtMoney(v));
+        return '<td'+(i===best?' style="color:var(--accent);font-weight:600"':'')+'>'+txt+'</td>';}).join('')+'</tr>';
+    }
+    $("yrsTbl").innerHTML=h+'</tbody>';
+    $("tot-yrs").textContent="best is highlighted";
+    $("yrsNote").textContent="Each row is a fresh run: what you would have if you sold, or cashed out, in that year, using the figures above. The highlighted figure is the best in that row. The Bali villa row uses the lease, building and tax figures above. The US shares figures repeat the past 10 years' very strong run for as many years as shown, which is unlikely to last, so use the cautious button for a fairer long view.";
+  }
   /* ---------- home loan, Australian shares ETF, property with no loan ---------- */
   function calcHl(s,invested,N){
     var use=Math.min(invested,s.hlBal), rest=invested-use, r=s.hlRate/100;
@@ -700,6 +737,7 @@ svg text{fill:var(--mute);font-family:var(--font);font-size:11px}
       rowOf("You can take some out",function(x){return x.acc;})+'</tbody>';
     renderTd(c,td);
     renderMore(c,hl,sh,pc);
+    renderYears(c);
     $("etfNote").textContent="The past 10 years are US share funds, in US dollars, to mid-2026, from several data sites that differ a little. They were an unusually strong period: the long-run average for shares is nearer 8 to 10% a year, which is what the cautious button uses. Past returns are not a forecast, and a fund can fall 30% or more in a year and take years to recover. Exchange rate changes against the Australian dollar are not included.";
   }
 
@@ -785,6 +823,7 @@ svg text{fill:var(--mute);font-family:var(--font);font-size:11px}
     try{if(!localStorage.getItem("villaROIv4")){if(raw)S.hlBal=0;localStorage.setItem("villaROIv4","1");}}catch(e){}
     try{if(!localStorage.getItem("villaROIv3")){if(raw){S.etfGrow=15;S.etfYield=1.2;S.etfFee=0;}localStorage.setItem("villaROIv3","1");}}catch(e){}
     buildLeft();stdWire();buildFx();sync();update();
+    $("yrsView").addEventListener("change",function(){renderYears(calc(S));});
     $("etfPast").addEventListener("click",function(){S.etfGrow=15;S.etfYield=1.2;S.etfFee=0;holdSave=false;sync();update();$("saveStatus").textContent="ETF set to the past 10 years average.";});
     $("etfLong").addEventListener("click",function(){S.etfGrow=6;S.etfYield=2;S.etfFee=0;holdSave=false;sync();update();$("saveStatus").textContent="ETF set to a cautious 8% a year.";});
   }
