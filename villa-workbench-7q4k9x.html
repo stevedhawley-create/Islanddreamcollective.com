@@ -168,10 +168,12 @@ svg text{fill:var(--mute);font-family:var(--font);font-size:11px}
         <p class="note" id="tdNote"></p>
       </div>
       <div class="card pad" id="moreCard">
-        <h2>Three more ways to use the same money</h2>
+        <h2>More ways to use the same money</h2>
+        <div id="hlWrap" hidden>
         <p class="note" id="hlIntro"></p>
         <div class="scroll"><table id="hlTbl"></table></div>
         <p class="note" id="hlNote"></p>
+        </div>
         <h2 style="margin-top:16px">Australian shares ETF</h2>
         <div class="scroll"><table id="asFunds"></table></div>
         <div class="scroll"><table id="asTbl" style="margin-top:10px"></table></div>
@@ -182,7 +184,7 @@ svg text{fill:var(--mute);font-family:var(--font);font-size:11px}
         <p class="note" id="pcNote"></p>
       </div>
       <div class="card pad" id="allCard">
-        <h2>All seven side by side</h2>
+        <h2 id="allH">All side by side</h2>
         <div class="scroll"><table id="triTbl"></table></div>
       </div>
       <div class="card pad">
@@ -280,7 +282,7 @@ svg text{fill:var(--mute);font-family:var(--font);font-size:11px}
     ]},
     {id:"hl",title:"Home loan comparison",total:"hlTotal",fields:[
       {k:"hlRate",l:"Your home loan interest rate",t:"p",min:0,max:12,step:0.05,d:6,u:"% a year. Check your own loan, it is not taxed because the home is not rented out"},
-      {k:"hlBal",l:"Your home loan balance",t:"m",min:0,max:3e10,step:1e8,d:8e9,u:"only this much can go against the loan, any extra goes into a term deposit"}
+      {k:"hlBal",l:"Your home loan balance",t:"m",min:0,max:3e10,step:1e8,d:0,u:"leave at 0 if you have no home loan and this option is hidden. Only this much can go against the loan, any extra goes into a term deposit"}
     ]},
     {id:"as",title:"Australian shares ETF comparison",total:"asTotal",fields:[
       {k:"ausGrow",l:"Price growth",t:"p",min:-5,max:15,step:0.5,d:5.2,u:"% a year. Start: about 9.2% total over 10 years, less the dividends"},
@@ -608,7 +610,8 @@ svg text{fill:var(--mute);font-family:var(--font);font-size:11px}
   }
   function renderMore(c,hl,sh,pc){
     var R=function(l,v,cls){return '<tr'+(cls?' class="'+cls+'"':'')+'><td>'+l+'</td><td class="n">'+v+'</td></tr>';};
-    $("tot-hl").textContent=pct(S.hlRate/100)+" saved";
+    var hasHl=S.hlBal>0;$("hlWrap").hidden=!hasHl;
+    $("tot-hl").textContent=hasHl?pct(S.hlRate/100)+" saved":"off, no loan";
     $("tot-as").textContent=pct((S.ausGrow+S.ausYield)/100)+" a year";
     $("hlIntro").textContent="Putting the same "+fmtMoney(c.invested)+" against your home loan, or in an offset account, at "+S.hlRate+"% a year. You stop paying that interest, and the interest you save is not taxed.";
     $("hlTbl").innerHTML=R("Put against the loan",fmtMoney(hl.use))+(hl.rest>0?R("Left over, in a term deposit",fmtMoney(hl.rest)):"")+R("Interest saved over "+c.N+" years",fmtMoney(hl.saved))+R("Value at the end",fmtMoney(hl.end))+R("Total profit",fmtMoney(hl.total),"tot")+R("Average return a year",hl.irr===null?"-":pct(hl.irr),"tot");
@@ -682,6 +685,8 @@ svg text{fill:var(--mute);font-family:var(--font);font-size:11px}
       {n:"Term deposit",end:td.end,tot:td.total,irr:td.irr,top:"no",fall:"no",acc:"at the end of the term"},
       {n:"Pay down home loan",end:hl.end,tot:hl.total,irr:hl.irr,top:"no",fall:"no",acc:"with an offset account"}
     ];
+    if(!(S.hlBal>0))cols.pop();
+    $("allH").textContent="All "+(cols.length===7?"seven":"six")+" side by side";
     var best=-1,bi=-2;cols.forEach(function(x,i){if(x.irr!==null&&x.irr>bi){bi=x.irr;best=i;}});
     var th='<thead><tr><th></th>'+cols.map(function(x){return '<th>'+x.n+'</th>';}).join('')+'</tr></thead><tbody>';
     var rowOf=function(l,f,cls){return '<tr'+(cls?' class="'+cls+'"':'')+'><td>'+l+'</td>'+cols.map(function(x,i){return '<td>'+f(x,i)+'</td>';}).join('')+'</tr>';};
@@ -777,6 +782,7 @@ svg text{fill:var(--mute);font-family:var(--font);font-size:11px}
     try{var raw=localStorage.getItem("villaROI");if(raw)apply(JSON.parse(raw));}catch(e){}
     try{if(location.hash.indexOf("#s=")===0){var sh=JSON.parse(decodeURIComponent(atob(location.hash.slice(3))));apply({S:sh.S,FX:sh.FX,CUR:sh.CUR});holdSave=true;["input","change"].forEach(function(ev){document.addEventListener(ev,function(){holdSave=false;},true);});$("saveStatus").textContent="Loaded the numbers from the link.";}}catch(e){}
     try{if(!localStorage.getItem("villaROIv2")){if(raw)S.valGrow=0;localStorage.setItem("villaROIv2","1");}}catch(e){}
+    try{if(!localStorage.getItem("villaROIv4")){if(raw)S.hlBal=0;localStorage.setItem("villaROIv4","1");}}catch(e){}
     try{if(!localStorage.getItem("villaROIv3")){if(raw){S.etfGrow=15;S.etfYield=1.2;S.etfFee=0;}localStorage.setItem("villaROIv3","1");}}catch(e){}
     buildLeft();stdWire();buildFx();sync();update();
     $("etfPast").addEventListener("click",function(){S.etfGrow=15;S.etfYield=1.2;S.etfFee=0;holdSave=false;sync();update();$("saveStatus").textContent="ETF set to the past 10 years average.";});
