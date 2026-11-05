@@ -100,8 +100,8 @@ svg text{fill:var(--mute);font-family:var(--font);font-size:11px}
 <div id="gate" style="position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:24px">
   <form id="gateForm" class="card pad" style="max-width:340px;width:100%">
     <h1 style="font-size:1.25rem">Villa Returns Workbench</h1>
-    <p class="sub" style="margin-bottom:12px">Private. Enter the passcode.</p>
-    <input type="password" id="gateIn" autocomplete="current-password" aria-label="Passcode" style="width:100%;margin-bottom:10px">
+    <p class="sub" style="margin-bottom:12px">Private. Enter your password.</p>
+    <input type="password" id="gateIn" autocomplete="current-password" aria-label="Password" style="width:100%;margin-bottom:10px">
     <button class="primary" type="submit" style="width:100%">Open</button>
     <p class="status" id="gateMsg" style="margin-top:8px"></p>
   </form>
@@ -827,17 +827,20 @@ svg text{fill:var(--mute);font-family:var(--font);font-size:11px}
     if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(url).then(done).catch(fallback);}else{fallback();}
   });
 
+  function isGuest(){try{return localStorage.getItem("villaROIuser")==="Guest";}catch(e){return false;}}
   function who(){var v=$("whoIn").value.trim();try{if(v)localStorage.setItem("villaROIwho",v);}catch(e){}return v;}
   function call(method,body){
     return fetch(API,{method:method,headers:{"Content-Type":"application/json","x-wb-key":wbkey()},body:body?JSON.stringify(body):undefined}).then(function(r){
       if(!r.ok)throw new Error("http "+r.status);return r.json();});
   }
   function remotePush(nm){
+    if(isGuest()){$("saveStatus").textContent="Saved on this phone only. Guests do not use the shared list.";return;}
     call("POST",{name:nm,data:SCEN[nm],by:who()}).then(function(){$("saveStatus").textContent="Saved \u201c"+nm+"\u201d for both of you.";}).catch(function(){$("saveStatus").textContent="Saved on this phone only. Could not reach the shared list.";});
   }
-  function remoteDelete(nm){call("DELETE",{name:nm}).catch(function(){});}
+  function remoteDelete(nm){if(isGuest())return;call("DELETE",{name:nm}).catch(function(){});}
   var firstSync=true;
   function syncRemote(){
+    if(isGuest())return;
     call("GET").then(function(res){
       var remote={},names={};
       (res.scenarios||[]).forEach(function(r){remote[r.name]=r.data;names[r.name]={by:r.saved_by,at:r.updated_at};});
@@ -863,19 +866,24 @@ svg text{fill:var(--mute);font-family:var(--font);font-size:11px}
 
 <script>
 (function(){
-  var HASH="6161b2838ffa6ce17b84db3b45b4f8437855ecf43e75de2d1ad0008eaae91aa0";
+  var USERS={"24a834f0b33e29579bbad21527428eba69ad820f64309c4ecfc6aaf65da95eda": "Steve", "0fc50e50011f01f7c46427008e2e3faa4da7868cdbd656a05e57fe1db6cf1879": "Tara", "ab956ef4854d8db53ea4bbae1640d197925ca236add6c7a2d95596cf51b0dd71": "Guest"};
   var gate=document.getElementById("gate");
-  function open(){gate.style.display="none";document.dispatchEvent(new Event("wb-open"));}
+  function open(name){
+    try{localStorage.setItem("villaROIuser",name);localStorage.setItem("villaROIwho",name);}catch(e){}
+    var w=document.getElementById("whoIn");if(w){w.value=name;w.readOnly=true;}
+    var h=document.querySelector("#scList");
+    gate.style.display="none";document.dispatchEvent(new Event("wb-open"));
+  }
   function hex(buf){return Array.prototype.map.call(new Uint8Array(buf),function(b){return ("0"+b.toString(16)).slice(-2);}).join("");}
   function sha(s){return crypto.subtle.digest("SHA-256",new TextEncoder().encode(s)).then(hex);}
-  try{var saved=localStorage.getItem("villaROIcode");if(saved){sha(saved).then(function(h){if(h===HASH)open();});}}catch(e){}
+  try{var saved=localStorage.getItem("villaROIcode");if(saved){sha(saved).then(function(h){if(USERS[h])open(USERS[h]);});}}catch(e){}
   document.getElementById("gateForm").addEventListener("submit",function(e){
     e.preventDefault();
     var v=document.getElementById("gateIn").value;
     sha(v).then(function(h){
-      if(h===HASH){try{localStorage.setItem("villaROIcode",v);}catch(e){}open();}
-      else{document.getElementById("gateMsg").textContent="That is not the passcode.";}
-    }).catch(function(){document.getElementById("gateMsg").textContent="This browser cannot check the passcode.";});
+      if(USERS[h]){try{localStorage.setItem("villaROIcode",v);}catch(e){}open(USERS[h]);}
+      else{document.getElementById("gateMsg").textContent="That is not a valid password.";}
+    }).catch(function(){document.getElementById("gateMsg").textContent="This browser cannot check the password.";});
   });
 })();
 </script>
