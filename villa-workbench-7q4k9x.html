@@ -358,6 +358,7 @@ svg text{fill:var(--mute);font-family:var(--font);font-size:11px}
   /* ---------- render outputs ---------- */
   function row(a,b,cls){return '<tr'+(cls?' class="'+cls+'"':'')+'><td>'+a+'</td><td class="n">'+b+'</td></tr>';}
   function update(){
+    var sy=window.pageYOffset;
     var c=calc(S);
     $("k-inv").textContent=fmtMoney(c.invested);
     $("k-ny").textContent=pct(c.netYield);
@@ -410,6 +411,7 @@ svg text{fill:var(--mute);font-family:var(--font);font-size:11px}
     renderAu(c);
     renderCompare();
     queueSave();
+    if(Math.abs(window.pageYOffset-sy)>2)window.scrollTo(0,sy);
   }
   function chart(c){
     var W=520,H=220,pl=58,pr=12,pt=14,pb=26,vals=c.cums,n=vals.length;
