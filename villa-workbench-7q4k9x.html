@@ -209,8 +209,9 @@ svg text{fill:var(--mute);font-family:var(--font);font-size:11px}
     ]},
     {id:"sell",title:"Hold and sell",total:"sellTotal",fields:[
       {k:"hold",l:"Years you hold it",t:"n",min:1,max:30,step:1,d:12,u:"years"},
-      {k:"valGrow",l:"Villa price change a year",t:"p",min:-8,max:8,step:0.5,d:0,u:"% a year. You own the lease, not the land. The land rise goes to the landowner, the building ages and new villas keep being built"},
-      {k:"leaseEff",l:"How much of the lease used up comes off the price",t:"p",min:0,max:100,step:5,d:50,u:"% (100 = straight line)"},
+      {k:"landGrow",l:"Land lease price rise (per are, per year)",t:"p",min:-3,max:12,step:0.5,d:3,u:"% a year. A buyer can always buy lease years at the going land rate, so the years left are worth that"},
+      {k:"bldDep",l:"Building and furniture value lost",t:"p",min:0,max:12,step:0.5,d:3,u:"% a year. It ages, needs work, and new villas keep being built"},
+      {k:"shortDisc",l:"Discount buyers take off when under 20 years of lease are left",t:"p",min:0,max:70,step:5,d:30,u:"% off the value of the remaining lease"},
       {k:"sellCost",l:"Selling costs",t:"p",min:0,max:15,step:0.5,d:4,u:"% of sale price"},
       {k:"cgt",l:"Tax on the sale profit",t:"p",min:0,max:40,step:0.5,d:0,u:"% of profit"},
       {k:"itax",l:"Income tax on yearly profit",t:"p",min:0,max:45,step:0.5,d:0,u:"% (0 = ignore)"}
@@ -281,16 +282,19 @@ svg text{fill:var(--mute);font-family:var(--font);font-size:11px}
       yrs.push({y:y,rev:rev,plat:plat,tax:tax,fee:fee,run:run,keep:keep,it:it,cash:cash});
       cf.push(cash);cum+=cash;cums.push(cum);
     }
-    var base=s.price+extCost, leaseTot=s.leaseBuy+s.extYears, rem=Math.max(leaseTot-N,0)/Math.max(leaseTot,1);
-    var ld=Math.max(0,Math.min(1,s.leaseEff/100));
-    var sale=base*Math.pow(1+s.valGrow/100,N)*(1-(1-rem)*ld);
+    var base=s.price+extCost, leaseTot=s.leaseBuy+s.extYears, remY=Math.max(leaseTot-N,0), rem=remY/Math.max(leaseTot,1);
+    var lease0=s.leaseBuy*s.extRate*s.are, B0=Math.max(0,s.price-lease0);
+    var landN=s.extRate*Math.pow(1+s.landGrow/100,N);
+    var leaseVal=remY*landN*s.are*(remY<20?(1-s.shortDisc/100):1);
+    var bld=B0*Math.pow(1-s.bldDep/100,N);
+    var sale=leaseVal+bld;
     var afterCost=sale*(1-s.sellCost/100);
     var gain=Math.max(0,afterCost-(base+feeAmt)), cgtAmt=gain*s.cgt/100, netSale=afterCost-cgtAmt;
     cf[N]+=netSale; cums[N]=cum+netSale;
     var total=cf.reduce(function(a,b){return a+b;},0);
     var y1=yrs[0];
     return {N:N,extCost:extCost,feeAmt:feeAmt,invested:invested,monthly:monthly,yrs:yrs,y1:y1,
-      sale:sale,afterCost:afterCost,cgtAmt:cgtAmt,netSale:netSale,rem:rem,leaseTot:leaseTot,
+      sale:sale,leaseVal:leaseVal,bldVal:bld,afterCost:afterCost,cgtAmt:cgtAmt,netSale:netSale,rem:rem,leaseTot:leaseTot,
       cf:cf,cums:cums,total:total,irr:irr(cf),
       netYield:invested>0?y1.keep/invested:NaN,grossYield:invested>0?y1.rev/invested:NaN,
       payback:y1.keep>0?invested/y1.keep:null,multiple:invested>0?(total+invested)/invested:NaN,
@@ -375,12 +379,14 @@ svg text{fill:var(--mute);font-family:var(--font);font-size:11px}
     fl+='<span class="flag">Running costs '+Math.round(runShare*100)+'% of revenue</span>';
     fl+='<span class="flag">You keep '+Math.round(y.keep/Math.max(y.rev,1)*100)+' of every 100 booked</span>';
     if(c.leaseLeftAtSale<15)fl+='<span class="flag">Only '+c.leaseLeftAtSale+' years of lease left at sale</span>';
-    if(S.valGrow>3)fl+='<span class="flag">Bali price growth above 3% a year is hard to justify on a leasehold villa</span>';
+    if(c.leaseLeftAtSale<20)fl+='<span class="flag">Under 20 years left at sale: buyers take '+S.shortDisc+'% off the lease</span>';
+    if(S.landGrow>6)fl+='<span class="flag">Land lease prices rising above 6% a year is optimistic</span>';
     if(S.occ>80)fl+='<span class="flag">Occupancy above 80% is hard to hold</span>';
     $("flags").innerHTML=fl;
     $("hold-h").textContent="If you hold "+c.N+" years and sell";
     $("sale").innerHTML=
       row("Lease left at sale",c.leaseLeftAtSale+" of "+c.leaseTot+" years")+
+      row("Value of the lease years left",fmtMoney(c.leaseVal))+row("Value of the building and fit-out",fmtMoney(c.bldVal))+
       row("Sale price",fmtMoney(c.sale))+row("After selling costs",fmtMoney(c.afterCost))+
       (c.cgtAmt>0?row("Tax on sale profit","-"+fmtMoney(c.cgtAmt)):"")+
       row("Cash from the sale",fmtMoney(c.netSale))+
