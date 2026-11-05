@@ -156,10 +156,20 @@ svg text{fill:var(--mute);font-family:var(--font);font-size:11px}
       <div class="card pad" id="etfCard">
         <h2>Same money in an ETF</h2>
         <p class="note" id="etfIntro"></p>
-        <div class="scroll"><table id="etfTbl"></table></div>
-        <h2 style="margin-top:14px">All three side by side</h2>
-        <div class="scroll"><table id="triTbl"></table></div>
+        <div class="sw" style="margin:8px 0"><button type="button" id="etfPast">Use the past 10 years</button><button type="button" id="etfLong">Use a cautious 8% a year</button></div>
+        <div class="scroll"><table id="etfFunds"></table></div>
+        <div class="scroll"><table id="etfTbl" style="margin-top:10px"></table></div>
         <p class="note" id="etfNote"></p>
+      </div>
+      <div class="card pad" id="tdCard">
+        <h2>Same money in a term deposit</h2>
+        <p class="note" id="tdIntro"></p>
+        <div class="scroll"><table id="tdTbl"></table></div>
+        <p class="note" id="tdNote"></p>
+      </div>
+      <div class="card pad" id="allCard">
+        <h2>All four side by side</h2>
+        <div class="scroll"><table id="triTbl"></table></div>
       </div>
       <div class="card pad">
         <h2>Saved villas, shared with Tara</h2>
@@ -245,10 +255,14 @@ svg text{fill:var(--mute);font-family:var(--font);font-size:11px}
       {k:"auTaxOn",l:"Include Australian tax (1 = yes, 0 = no)",t:"n",min:0,max:1,step:1,d:1,u:"rental losses are not used to reduce other income"}
     ]},
     {id:"etf",title:"ETF comparison",total:"etfTotal",fields:[
-      {k:"etfGrow",l:"Price growth",t:"p",min:-5,max:15,step:0.5,d:5,u:"% a year, before fees"},
-      {k:"etfYield",l:"Dividends and distributions",t:"p",min:0,max:8,step:0.1,d:2.5,u:"% of the value a year, taxed and reinvested"},
-      {k:"etfFee",l:"Fund fee",t:"p",min:0,max:2,step:0.05,d:0.2,u:"% a year taken off the growth"},
+      {k:"etfGrow",l:"Price growth",t:"p",min:-5,max:22,step:0.5,d:15,u:"% a year. Start: the five-fund average over the past 10 years, shown in the card"},
+      {k:"etfYield",l:"Dividends and distributions",t:"p",min:0,max:8,step:0.1,d:1.2,u:"% of the value a year, taxed each year"},
+      {k:"etfReinv",l:"Reinvest the dividends into the fund (1 = yes, 0 = take as cash)",t:"n",min:0,max:1,step:1,d:1,u:"reinvested dividends buy more of the fund and compound"},
+      {k:"etfFee",l:"Extra fund fee",t:"p",min:0,max:2,step:0.05,d:0,u:"% a year. The past returns are already after the funds' own fees"},
       {k:"etfSell",l:"Brokerage and selling costs",t:"p",min:0,max:3,step:0.05,d:0.1,u:"% of the sale value. Tax rate and CPI allowance are the Australian ones above"}
+    ]},
+    {id:"td",title:"Term deposit comparison",total:"tdTotal",fields:[
+      {k:"tdRate",l:"Term deposit interest rate",t:"p",min:0,max:10,step:0.05,d:5,u:"% a year, interest added to the deposit each year and taxed at your rate"}
     ]}
   ];
   var ALL=[];SECTIONS.forEach(function(s){s.fields.forEach(function(f){ALL.push(f);});});
@@ -533,42 +547,66 @@ svg text{fill:var(--mute);font-family:var(--font);font-size:11px}
     $("auNote").textContent=msg+"Tax is simplified: rental losses give no tax benefit, the sale profit is taxed after allowing for CPI on the purchase cost, and the rules are new, so check them. Growth and rent figures are your own guesses. Bank rates are indicative variable investment loan rates, principal and interest, taken from comparison sites and moved up by the 0.25 point rise the banks pass on from 13 November 2026. Your own rate depends on the loan size and what you negotiate, so check each bank.";
   }
 
+  /* ---------- term deposit comparison ---------- */
+  function calcTd(s,invested,N){
+    var on=s.auTaxOn>=0.5,tr=s.auTax/100,r=s.tdRate/100,V=invested,intr=0,tax=0;
+    for(var y=1;y<=N;y++){var i=V*r,tx=on?i*tr:0;V+=i-tx;intr+=i;tax+=tx;}
+    var end=V,total=end-invested;
+    return {end:end,interest:intr,tax:tax,total:total,irr:(invested>0&&N>0&&end>0)?Math.pow(end/invested,1/N)-1:null};
+  }
+  function renderTd(c,td){
+    $("tot-td").textContent=pct(S.tdRate/100)+" a year";
+    $("tdIntro").textContent="The same "+fmtMoney(c.invested)+" in a bank term deposit at "+S.tdRate+"% a year for "+c.N+" years. Each year's interest is taxed at your rate and the rest is added to the deposit, so it earns interest on its interest.";
+    var R=function(l,v,cls){return '<tr'+(cls?' class="'+cls+'"':'')+'><td>'+l+'</td><td class="n">'+v+'</td></tr>';};
+    $("tdTbl").innerHTML=R("Money put in",fmtMoney(c.invested))+R("Interest earned in total",fmtMoney(td.interest))+R("Tax on the interest",td.tax>0?"-"+fmtMoney(td.tax):"none")+R("Balance after "+c.N+" years",fmtMoney(td.end))+R("Total profit",fmtMoney(td.total),"tot")+R("Average return a year, after tax",pct(td.irr),"tot");
+    $("tdNote").textContent="Term deposits are usually for 1 to 5 years, so over a longer time it is rolled over at whatever rate is offered then, which may be lower or higher. A deposit with an Australian bank is covered by the government guarantee up to A$250,000 per person per bank.";
+  }
   /* ---------- ETF comparison ---------- */
   function calcEtf(s,invested,N){
     var on=s.auTaxOn>=0.5, tr=s.auTax/100, g=(s.etfGrow-s.etfFee)/100, yv=s.etfYield/100, cpi=s.auCpi/100;
-    var V=invested, ib=invested, divs=0, divTax=0;
+    var V=invested, ib=invested, divs=0, divTax=0, reinv=s.etfReinv>=0.5, cf=[-invested], cashIn=0;
     for(var y=1;y<=N;y++){
-      var d=V*yv, tx=on?d*tr:0, net=d-tx;
-      V=V*(1+g)+net; ib=ib*(1+cpi)+net; divs+=d; divTax+=tx;
+      var d=V*yv, tx=on?d*tr:0, net=d-tx, got=0;
+      if(reinv){V=V*(1+g)+net;ib=ib*(1+cpi)+net;}else{V=V*(1+g);ib=ib*(1+cpi);got=net;cashIn+=net;}
+      divs+=d; divTax+=tx; cf.push(got);
     }
     var afterSell=V*(1-s.etfSell/100), gain=Math.max(0,afterSell-ib), cgt=on?gain*tr:0, netSale=afterSell-cgt;
-    var cf=[-invested];for(var i=1;i<=N;i++)cf.push(0);cf[N]+=netSale;
-    var total=netSale-invested;
-    return {value:V,divs:divs,divTax:divTax,cgt:cgt,netSale:netSale,total:total,irr:irr(cf),multiple:invested>0?netSale/invested:NaN,on:on};
+    cf[N]+=netSale;
+    var total=netSale+cashIn-invested;
+    return {value:V,divs:divs,divTax:divTax,cgt:cgt,netSale:netSale,cashIn:cashIn,reinv:reinv,total:total,irr:irr(cf),multiple:invested>0?(netSale+cashIn)/invested:NaN,on:on};
   }
   function renderEtf(c){
     var e=calcEtf(S,c.invested,c.N), a=calcAu(S,c.invested,c.N);
     $("tot-etf").textContent=pct((S.etfGrow+S.etfYield-S.etfFee)/100)+" a year";
-    $("etfIntro").textContent="The same "+fmtMoney(c.invested)+" put into an exchange-traded fund for "+c.N+" years. Dividends are taxed each year and reinvested, growth is taxed when you sell, with the CPI allowance on the cost.";
+    $("etfIntro").textContent="The same "+fmtMoney(c.invested)+" put into an exchange-traded fund for "+c.N+" years. "+(e.reinv?"Dividends are taxed each year and the rest is reinvested into the fund, so it compounds.":"Dividends are taxed and paid to you as cash.")+" Growth is taxed when you sell, with the CPI allowance on the cost.";
+    var F=[["VOO","Vanguard",15.5],["IVV","BlackRock iShares",15.5],["SPY","State Street",15.4],["QQQ","Invesco",20.3],["SCHB","Charles Schwab",14.5]],avg=0;
+    var fh='<thead><tr><th>Fund</th><th>Provider</th><th>10 years, a year</th></tr></thead><tbody>';
+    F.forEach(function(f){avg+=f[2];fh+='<tr><td>'+f[0]+'</td><td style="font-family:var(--font)">'+f[1]+'</td><td>'+f[2].toFixed(1)+'%</td></tr>';});
+    avg/=F.length;
+    $("etfFunds").innerHTML=fh+'<tr class="tot"><td>Average</td><td></td><td>'+avg.toFixed(1)+'%</td></tr></tbody>';
     var R=function(l,v,cls){return '<tr'+(cls?' class="'+cls+'"':'')+'><td>'+l+'</td><td class="n">'+v+'</td></tr>';};
     $("etfTbl").innerHTML=R("Money put in",fmtMoney(c.invested))+
       R("Value after "+c.N+" years, before sale tax",fmtMoney(e.value))+
-      R("Dividends paid out by the fund",fmtMoney(e.divs))+
+      R("Dividends paid by the fund",fmtMoney(e.divs))+
       R("Tax on those dividends",e.divTax>0?"-"+fmtMoney(e.divTax):"none")+
+      (e.reinv?"":R("Dividends received as cash",fmtMoney(e.cashIn)))+
       R("Tax on the sale profit",e.cgt>0?"-"+fmtMoney(e.cgt):"none")+
       R("Cash back from the sale",fmtMoney(e.netSale))+
       R("Total profit",fmtMoney(e.total),"tot"+(e.total<0?" neg":""))+
       R("Average return a year",e.irr===null?"-":pct(e.irr),"tot");
-    var Q=function(l,x,y,z,cls){return '<tr'+(cls?' class="'+cls+'"':'')+'><td>'+l+'</td><td>'+x+'</td><td>'+y+'</td><td>'+z+'</td></tr>';};
-    $("triTbl").innerHTML='<thead><tr><th></th><th>Bali villa</th><th>Aus property</th><th>ETF</th></tr></thead><tbody>'+
-      Q("Money put in",fmtMoney(c.invested),fmtMoney(c.invested),fmtMoney(c.invested))+
-      Q("Cash back from the sale",fmtMoney(c.netSale),fmtMoney(a.netSale),fmtMoney(e.netSale))+
-      Q("Income received, or top-ups paid, along the way",fmtMoney(c.total+c.invested-c.netSale),fmtMoney(a.total+c.invested-a.netSale),"reinvested")+
-      Q("Total profit",fmtMoney(c.total),fmtMoney(a.total),fmtMoney(e.total),"tot")+
-      Q("Average return a year",c.irr===null?"-":pct(c.irr),a.irr===null?"-":pct(a.irr),e.irr===null?"-":pct(e.irr),"tot")+
-      Q("Needs topping up from your pocket",(c.cf.slice(1,c.N).some(function(v){return v<0;}))?"yes":"no",a.cf.slice(1,c.N).some(function(v){return v<0;})?"yes, every year":"no","no")+
-      Q("You can sell part of it","no","no","yes")+'</tbody>';
-    $("etfNote").textContent="Shares go down as well as up. This uses a smooth average, but a real fund can fall 30% or more in a year and take years to recover. The ETF needs no tenants, repairs or builders, and you can sell part of it any day. Dividends here have no franking credits, which would lower the tax on Australian shares.";
+    var td=calcTd(S,c.invested,c.N);
+    var Q=function(l,x,y,z,w,cls){return '<tr'+(cls?' class="'+cls+'"':'')+'><td>'+l+'</td><td>'+x+'</td><td>'+y+'</td><td>'+z+'</td><td>'+w+'</td></tr>';};
+    $("triTbl").innerHTML='<thead><tr><th></th><th>Bali villa</th><th>Aus property</th><th>ETF</th><th>Deposit</th></tr></thead><tbody>'+
+      Q("Money put in",fmtMoney(c.invested),fmtMoney(c.invested),fmtMoney(c.invested),fmtMoney(c.invested))+
+      Q("Cash back at the end",fmtMoney(c.netSale),fmtMoney(a.netSale),fmtMoney(e.netSale),fmtMoney(td.end))+
+      Q("Income received, or top-ups paid, along the way",fmtMoney(c.total+c.invested-c.netSale),fmtMoney(a.total+c.invested-a.netSale),e.reinv?"reinvested":fmtMoney(e.cashIn),"reinvested")+
+      Q("Total profit",fmtMoney(c.total),fmtMoney(a.total),fmtMoney(e.total),fmtMoney(td.total),"tot")+
+      Q("Average return a year",c.irr===null?"-":pct(c.irr),a.irr===null?"-":pct(a.irr),e.irr===null?"-":pct(e.irr),pct(td.irr),"tot")+
+      Q("Needs topping up from your pocket",(c.cf.slice(1,c.N).some(function(v){return v<0;}))?"yes":"no",a.cf.slice(1,c.N).some(function(v){return v<0;})?"yes, every year":"no","no","no")+
+      Q("Value can fall","yes","yes","yes, a lot","no")+
+      Q("You can take some out","no","no","yes","at the end of the term")+'</tbody>';
+    renderTd(c,td);
+    $("etfNote").textContent="The past 10 years are US share funds, in US dollars, to mid-2026, from several data sites that differ a little. They were an unusually strong period: the long-run average for shares is nearer 8 to 10% a year, which is what the cautious button uses. Past returns are not a forecast, and a fund can fall 30% or more in a year and take years to recover. Exchange rate changes against the Australian dollar are not included.";
   }
 
   /* ---------- scenarios ---------- */
@@ -650,7 +688,10 @@ svg text{fill:var(--mute);font-family:var(--font);font-size:11px}
     try{var raw=localStorage.getItem("villaROI");if(raw)apply(JSON.parse(raw));}catch(e){}
     try{if(location.hash.indexOf("#s=")===0){var sh=JSON.parse(decodeURIComponent(atob(location.hash.slice(3))));apply({S:sh.S,FX:sh.FX,CUR:sh.CUR});holdSave=true;["input","change"].forEach(function(ev){document.addEventListener(ev,function(){holdSave=false;},true);});$("saveStatus").textContent="Loaded the numbers from the link.";}}catch(e){}
     try{if(!localStorage.getItem("villaROIv2")){if(raw)S.valGrow=0;localStorage.setItem("villaROIv2","1");}}catch(e){}
+    try{if(!localStorage.getItem("villaROIv3")){if(raw){S.etfGrow=15;S.etfYield=1.2;S.etfFee=0;}localStorage.setItem("villaROIv3","1");}}catch(e){}
     buildLeft();stdWire();buildFx();sync();update();
+    $("etfPast").addEventListener("click",function(){S.etfGrow=15;S.etfYield=1.2;S.etfFee=0;holdSave=false;sync();update();$("saveStatus").textContent="ETF set to the past 10 years average.";});
+    $("etfLong").addEventListener("click",function(){S.etfGrow=6;S.etfYield=2;S.etfFee=0;holdSave=false;sync();update();$("saveStatus").textContent="ETF set to a cautious 8% a year.";});
   }
 
   $("shareBtn").addEventListener("click",function(){
