@@ -167,8 +167,22 @@ svg text{fill:var(--mute);font-family:var(--font);font-size:11px}
         <div class="scroll"><table id="tdTbl"></table></div>
         <p class="note" id="tdNote"></p>
       </div>
+      <div class="card pad" id="moreCard">
+        <h2>Three more ways to use the same money</h2>
+        <p class="note" id="hlIntro"></p>
+        <div class="scroll"><table id="hlTbl"></table></div>
+        <p class="note" id="hlNote"></p>
+        <h2 style="margin-top:16px">Australian shares ETF</h2>
+        <div class="scroll"><table id="asFunds"></table></div>
+        <div class="scroll"><table id="asTbl" style="margin-top:10px"></table></div>
+        <p class="note" id="asNote"></p>
+        <h2 style="margin-top:16px">Australian property with no loan</h2>
+        <p class="note" id="pcIntro"></p>
+        <div class="scroll"><table id="pcTbl"></table></div>
+        <p class="note" id="pcNote"></p>
+      </div>
       <div class="card pad" id="allCard">
-        <h2>All four side by side</h2>
+        <h2>All seven side by side</h2>
         <div class="scroll"><table id="triTbl"></table></div>
       </div>
       <div class="card pad">
@@ -263,6 +277,16 @@ svg text{fill:var(--mute);font-family:var(--font);font-size:11px}
     ]},
     {id:"td",title:"Term deposit comparison",total:"tdTotal",fields:[
       {k:"tdRate",l:"Term deposit interest rate",t:"p",min:0,max:10,step:0.05,d:5,u:"% a year, interest added to the deposit each year and taxed at your rate"}
+    ]},
+    {id:"hl",title:"Home loan comparison",total:"hlTotal",fields:[
+      {k:"hlRate",l:"Your home loan interest rate",t:"p",min:0,max:12,step:0.05,d:6,u:"% a year. Check your own loan, it is not taxed because the home is not rented out"},
+      {k:"hlBal",l:"Your home loan balance",t:"m",min:0,max:3e10,step:1e8,d:8e9,u:"only this much can go against the loan, any extra goes into a term deposit"}
+    ]},
+    {id:"as",title:"Australian shares ETF comparison",total:"asTotal",fields:[
+      {k:"ausGrow",l:"Price growth",t:"p",min:-5,max:15,step:0.5,d:5.2,u:"% a year. Start: about 9.2% total over 10 years, less the dividends"},
+      {k:"ausYield",l:"Dividends",t:"p",min:0,max:8,step:0.1,d:4,u:"% of the value a year"},
+      {k:"ausFrank",l:"Share of the dividends that carry franking credits",t:"p",min:0,max:100,step:5,d:75,u:"% (franking credits reduce your tax)"},
+      {k:"ausReinv",l:"Reinvest the dividends (1 = yes, 0 = take as cash)",t:"n",min:0,max:1,step:1,d:1,u:"reinvested after tax"}
     ]}
   ];
   var ALL=[];SECTIONS.forEach(function(s){s.fields.forEach(function(f){ALL.push(f);});});
@@ -547,6 +571,59 @@ svg text{fill:var(--mute);font-family:var(--font);font-size:11px}
     $("auNote").textContent=msg+"Tax is simplified: rental losses give no tax benefit, the sale profit is taxed after allowing for CPI on the purchase cost, and the rules are new, so check them. Growth and rent figures are your own guesses. Bank rates are indicative variable investment loan rates, principal and interest, taken from comparison sites and moved up by the 0.25 point rise the banks pass on from 13 November 2026. Your own rate depends on the loan size and what you negotiate, so check each bank.";
   }
 
+
+  /* ---------- home loan, Australian shares ETF, property with no loan ---------- */
+  function calcHl(s,invested,N){
+    var use=Math.min(invested,s.hlBal), rest=invested-use, r=s.hlRate/100;
+    var hlEnd=use*Math.pow(1+r,N), restTd=rest>0?calcTd(s,rest,N):{end:0,tax:0,interest:0};
+    var end=hlEnd+restTd.end, total=end-invested;
+    return {use:use,rest:rest,saved:hlEnd-use,end:end,total:total,restEnd:restTd.end,irr:(invested>0&&N>0&&end>0)?Math.pow(end/invested,1/N)-1:null};
+  }
+  function calcAusEtf(s,invested,N){
+    var on=s.auTaxOn>=0.5,tr=s.auTax/100,g=(s.ausGrow-0)/100,yv=s.ausYield/100,fr=s.ausFrank/100,cpi=s.auCpi/100,reinv=s.ausReinv>=0.5;
+    var V=invested,ib=invested,divs=0,divTax=0,credits=0,cashIn=0,cf=[-invested];
+    for(var y=1;y<=N;y++){
+      var d=V*yv, cr=d*fr*(0.30/0.70), tx=on?Math.max(-cr*0,(d+cr)*tr-cr):0, net=d-tx, got=0;
+      if(reinv){V=V*(1+g)+net;ib=ib*(1+cpi)+net;}else{V=V*(1+g);ib=ib*(1+cpi);got=net;cashIn+=net;}
+      divs+=d;divTax+=tx;credits+=cr;cf.push(got);
+    }
+    var afterSell=V*(1-s.etfSell/100),gain=Math.max(0,afterSell-ib),cgt=on?gain*tr:0,netSale=afterSell-cgt;
+    cf[N]+=netSale;
+    var total=netSale+cashIn-invested;
+    return {value:V,divs:divs,divTax:divTax,credits:credits,cgt:cgt,netSale:netSale,cashIn:cashIn,reinv:reinv,total:total,irr:irr(cf)};
+  }
+  function calcPropCash(s,invested,N){
+    var on=s.auTaxOn>=0.5,tr=s.auTax/100,cpi=s.auCpi/100,stamp=s.auStamp/100;
+    var P=invested/(1+stamp),cf=[-invested],cash=0,tax=0,rent1=0;
+    for(var y=1;y<=N;y++){
+      var rent=P*s.auYield/100*Math.pow(1+s.auRentGrow/100,y-1), costs=rent*(s.auAgent+s.auOther)/100, profit=rent-costs, tx=(on&&profit>0)?profit*tr:0, c=profit-tx;
+      if(y===1)rent1=rent;
+      cf.push(c);cash+=c;tax+=tx;
+    }
+    var value=P*Math.pow(1+s.auGrow/100,N),afterSell=value*(1-s.auSell/100),base=P*(1+stamp),indexed=base*Math.pow(1+cpi,N);
+    var gain=Math.max(0,afterSell-indexed),cgt=on?gain*tr:0,netSale=afterSell-cgt;
+    cf[N]+=netSale;
+    var total=cf.reduce(function(a,b){return a+b;},0);
+    return {P:P,rent1:rent1,cash:cash,tax:tax,value:value,cgt:cgt,netSale:netSale,total:total,irr:irr(cf)};
+  }
+  function renderMore(c,hl,sh,pc){
+    var R=function(l,v,cls){return '<tr'+(cls?' class="'+cls+'"':'')+'><td>'+l+'</td><td class="n">'+v+'</td></tr>';};
+    $("tot-hl").textContent=pct(S.hlRate/100)+" saved";
+    $("tot-as").textContent=pct((S.ausGrow+S.ausYield)/100)+" a year";
+    $("hlIntro").textContent="Putting the same "+fmtMoney(c.invested)+" against your home loan, or in an offset account, at "+S.hlRate+"% a year. You stop paying that interest, and the interest you save is not taxed.";
+    $("hlTbl").innerHTML=R("Put against the loan",fmtMoney(hl.use))+(hl.rest>0?R("Left over, in a term deposit",fmtMoney(hl.rest)):"")+R("Interest saved over "+c.N+" years",fmtMoney(hl.saved))+R("Value at the end",fmtMoney(hl.end))+R("Total profit",fmtMoney(hl.total),"tot")+R("Average return a year",hl.irr===null?"-":pct(hl.irr),"tot");
+    $("hlNote").textContent="Safe and guaranteed as long as the rate stays that high. If rates fall, the saving falls. With an offset account you can still take the money out. Check what your own loan allows.";
+    var F=[["VAS","Vanguard",9.3],["IOZ","BlackRock iShares",8.9],["A200","BetaShares",9.4]],avg=0;
+    var fh='<thead><tr><th>Fund</th><th>Provider</th><th>Past, a year</th></tr></thead><tbody>';
+    F.forEach(function(f){avg+=f[2];fh+='<tr><td>'+f[0]+'</td><td style="font-family:var(--font)">'+f[1]+'</td><td>'+f[2].toFixed(1)+'%'+(f[0]==="A200"?" (5 years)":"")+'</td></tr>';});
+    avg/=F.length;
+    $("asFunds").innerHTML=fh+'<tr class="tot"><td>Average</td><td></td><td>'+avg.toFixed(1)+'%</td></tr></tbody>';
+    $("asTbl").innerHTML=R("Value after "+c.N+" years, before sale tax",fmtMoney(sh.value))+R("Dividends paid",fmtMoney(sh.divs))+R("Franking credits that came with them",fmtMoney(sh.credits))+R("Tax on dividends, after franking credits",sh.divTax>0?"-"+fmtMoney(sh.divTax):"none")+R("Tax on the sale profit",sh.cgt>0?"-"+fmtMoney(sh.cgt):"none")+R("Cash back from the sale",fmtMoney(sh.netSale))+(sh.reinv?"":R("Dividends received as cash",fmtMoney(sh.cashIn)))+R("Total profit",fmtMoney(sh.total),"tot"+(sh.total<0?" neg":""))+R("Average return a year",sh.irr===null?"-":pct(sh.irr),"tot");
+    $("asNote").textContent="The past returns are before franking credits, for Australian shares. A200 only started in 2018, so its figure is five years. The sources differ by a few tenths of a point. Share prices go down as well as up, and the funds can fall 30% or more in a year.";
+    $("pcIntro").textContent="The same "+fmtMoney(c.invested)+" buys an Australian property outright after "+S.auStamp+"% stamp duty and costs, rented on a 6 or 12 month lease. No loan, so no interest and no top-ups.";
+    $("pcTbl").innerHTML=R("Property price",fmtMoney(pc.P))+R("Rent in year 1",fmtMoney(pc.rent1))+R("Cash kept from rent over "+c.N+" years, after costs and tax",fmtMoney(pc.cash))+R("Value at sale",fmtMoney(pc.value))+R("Tax on the sale profit",pc.cgt>0?"-"+fmtMoney(pc.cgt):"none")+R("Cash back from the sale",fmtMoney(pc.netSale))+R("Total profit",fmtMoney(pc.total),"tot"+(pc.total<0?" neg":""))+R("Average return a year",pc.irr===null?"-":pct(pc.irr),"tot");
+    $("pcNote").textContent="It uses the rent, cost and growth figures in the Australian comparison section, so changing them changes this too. Property is hard to sell part of and can sit unsold for months.";
+  }
   /* ---------- term deposit comparison ---------- */
   function calcTd(s,invested,N){
     var on=s.auTaxOn>=0.5,tr=s.auTax/100,r=s.tdRate/100,V=invested,intr=0,tax=0;
@@ -594,18 +671,30 @@ svg text{fill:var(--mute);font-family:var(--font);font-size:11px}
       R("Cash back from the sale",fmtMoney(e.netSale))+
       R("Total profit",fmtMoney(e.total),"tot"+(e.total<0?" neg":""))+
       R("Average return a year",e.irr===null?"-":pct(e.irr),"tot");
-    var td=calcTd(S,c.invested,c.N);
-    var Q=function(l,x,y,z,w,cls){return '<tr'+(cls?' class="'+cls+'"':'')+'><td>'+l+'</td><td>'+x+'</td><td>'+y+'</td><td>'+z+'</td><td>'+w+'</td></tr>';};
-    $("triTbl").innerHTML='<thead><tr><th></th><th>Bali villa</th><th>Aus property</th><th>ETF</th><th>Deposit</th></tr></thead><tbody>'+
-      Q("Money put in",fmtMoney(c.invested),fmtMoney(c.invested),fmtMoney(c.invested),fmtMoney(c.invested))+
-      Q("Cash back at the end",fmtMoney(c.netSale),fmtMoney(a.netSale),fmtMoney(e.netSale),fmtMoney(td.end))+
-      Q("Income received, or top-ups paid, along the way",fmtMoney(c.total+c.invested-c.netSale),fmtMoney(a.total+c.invested-a.netSale),e.reinv?"reinvested":fmtMoney(e.cashIn),"reinvested")+
-      Q("Total profit",fmtMoney(c.total),fmtMoney(a.total),fmtMoney(e.total),fmtMoney(td.total),"tot")+
-      Q("Average return a year",c.irr===null?"-":pct(c.irr),a.irr===null?"-":pct(a.irr),e.irr===null?"-":pct(e.irr),pct(td.irr),"tot")+
-      Q("Needs topping up from your pocket",(c.cf.slice(1,c.N).some(function(v){return v<0;}))?"yes":"no",a.cf.slice(1,c.N).some(function(v){return v<0;})?"yes, every year":"no","no","no")+
-      Q("Value can fall","yes","yes","yes, a lot","no")+
-      Q("You can take some out","no","no","yes","at the end of the term")+'</tbody>';
+    var td=calcTd(S,c.invested,c.N), hl=calcHl(S,c.invested,c.N), sh=calcAusEtf(S,c.invested,c.N), pc=calcPropCash(S,c.invested,c.N);
+    var tops=function(x){return x.some(function(v){return v<0;});};
+    var cols=[
+      {n:"Bali villa",end:c.netSale,tot:c.total,irr:c.irr,top:"no",fall:"yes",acc:"no"},
+      {n:"Aus property, with loan",end:a.netSale,tot:a.total,irr:a.irr,top:"yes, every year",fall:"yes",acc:"no"},
+      {n:"Aus property, no loan",end:pc.netSale,tot:pc.total,irr:pc.irr,top:"no",fall:"yes",acc:"no"},
+      {n:"US shares ETF",end:e.netSale,tot:e.total,irr:e.irr,top:"no",fall:"yes, a lot",acc:"yes"},
+      {n:"Aus shares ETF",end:sh.netSale,tot:sh.total,irr:sh.irr,top:"no",fall:"yes, a lot",acc:"yes"},
+      {n:"Term deposit",end:td.end,tot:td.total,irr:td.irr,top:"no",fall:"no",acc:"at the end of the term"},
+      {n:"Pay down home loan",end:hl.end,tot:hl.total,irr:hl.irr,top:"no",fall:"no",acc:"with an offset account"}
+    ];
+    var best=-1,bi=-2;cols.forEach(function(x,i){if(x.irr!==null&&x.irr>bi){bi=x.irr;best=i;}});
+    var th='<thead><tr><th></th>'+cols.map(function(x){return '<th>'+x.n+'</th>';}).join('')+'</tr></thead><tbody>';
+    var rowOf=function(l,f,cls){return '<tr'+(cls?' class="'+cls+'"':'')+'><td>'+l+'</td>'+cols.map(function(x,i){return '<td>'+f(x,i)+'</td>';}).join('')+'</tr>';};
+    $("triTbl").innerHTML=th+
+      rowOf("Money put in",function(){return fmtMoney(c.invested);})+
+      rowOf("Cash back at the end",function(x){return fmtMoney(x.end);})+
+      rowOf("Total profit",function(x){return fmtMoney(x.tot);},"tot")+
+      rowOf("Average return a year",function(x,i){return (x.irr===null?"-":pct(x.irr))+(i===best?" (highest)":"");},"tot")+
+      rowOf("Needs topping up from your pocket",function(x){return x.top;})+
+      rowOf("Value can fall",function(x){return x.fall;})+
+      rowOf("You can take some out",function(x){return x.acc;})+'</tbody>';
     renderTd(c,td);
+    renderMore(c,hl,sh,pc);
     $("etfNote").textContent="The past 10 years are US share funds, in US dollars, to mid-2026, from several data sites that differ a little. They were an unusually strong period: the long-run average for shares is nearer 8 to 10% a year, which is what the cautious button uses. Past returns are not a forecast, and a fund can fall 30% or more in a year and take years to recover. Exchange rate changes against the Australian dollar are not included.";
   }
 
