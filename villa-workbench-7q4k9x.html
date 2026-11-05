@@ -153,6 +153,14 @@ svg text{fill:var(--mute);font-family:var(--font);font-size:11px}
         <div id="auFlags" style="margin-top:8px"></div>
         <p class="note" id="auNote"></p>
       </div>
+      <div class="card pad" id="etfCard">
+        <h2>Same money in an ETF</h2>
+        <p class="note" id="etfIntro"></p>
+        <div class="scroll"><table id="etfTbl"></table></div>
+        <h2 style="margin-top:14px">All three side by side</h2>
+        <div class="scroll"><table id="triTbl"></table></div>
+        <p class="note" id="etfNote"></p>
+      </div>
       <div class="card pad">
         <h2>Saved villas, shared with Tara</h2>
         <div class="save" style="margin-bottom:8px"><input type="text" id="whoIn" placeholder="Your name, e.g. Steve or Tara" aria-label="Your name" maxlength="40"></div>
@@ -235,6 +243,12 @@ svg text{fill:var(--mute);font-family:var(--font);font-size:11px}
       {k:"auTax",l:"Your tax rate on rent and sale profit",t:"p",min:0,max:47,step:0.5,d:37,u:"% (top marginal rate)"},
       {k:"auCpi",l:"CPI allowance on the purchase cost for tax on the sale",t:"p",min:0,max:8,step:0.1,d:2.5,u:"% a year, no 50% discount"},
       {k:"auTaxOn",l:"Include Australian tax (1 = yes, 0 = no)",t:"n",min:0,max:1,step:1,d:1,u:"rental losses are not used to reduce other income"}
+    ]},
+    {id:"etf",title:"ETF comparison",total:"etfTotal",fields:[
+      {k:"etfGrow",l:"Price growth",t:"p",min:-5,max:15,step:0.5,d:5,u:"% a year, before fees"},
+      {k:"etfYield",l:"Dividends and distributions",t:"p",min:0,max:8,step:0.1,d:2.5,u:"% of the value a year, taxed and reinvested"},
+      {k:"etfFee",l:"Fund fee",t:"p",min:0,max:2,step:0.05,d:0.2,u:"% a year taken off the growth"},
+      {k:"etfSell",l:"Brokerage and selling costs",t:"p",min:0,max:3,step:0.05,d:0.1,u:"% of the sale value. Tax rate and CPI allowance are the Australian ones above"}
     ]}
   ];
   var ALL=[];SECTIONS.forEach(function(s){s.fields.forEach(function(f){ALL.push(f);});});
@@ -409,6 +423,7 @@ svg text{fill:var(--mute);font-family:var(--font);font-size:11px}
     $("tot-cost").textContent=fmtMoney(c.monthly)+" a month";
     $("tot-sell").textContent=c.N+" years";
     renderAu(c);
+    renderEtf(c);
     renderCompare();
     queueSave();
     if(Math.abs(window.pageYOffset-sy)>2)window.scrollTo(0,sy);
@@ -516,6 +531,44 @@ svg text{fill:var(--mute);font-family:var(--font);font-size:11px}
       msg=(ai>bi?"On these numbers Australia returns more a year ("+pct(ai)+" against "+pct(bi)+")":"On these numbers Bali returns more a year ("+pct(bi)+" against "+pct(ai)+")")+". The gap comes mostly from the loan: it lets the same money control a property about "+(a.P/Math.max(c.invested,1)).toFixed(1)+" times the size, so price growth works on more, but interest takes more of the rent. ";
     }
     $("auNote").textContent=msg+"Tax is simplified: rental losses give no tax benefit, the sale profit is taxed after allowing for CPI on the purchase cost, and the rules are new, so check them. Growth and rent figures are your own guesses. Bank rates are indicative variable investment loan rates, principal and interest, taken from comparison sites and moved up by the 0.25 point rise the banks pass on from 13 November 2026. Your own rate depends on the loan size and what you negotiate, so check each bank.";
+  }
+
+  /* ---------- ETF comparison ---------- */
+  function calcEtf(s,invested,N){
+    var on=s.auTaxOn>=0.5, tr=s.auTax/100, g=(s.etfGrow-s.etfFee)/100, yv=s.etfYield/100, cpi=s.auCpi/100;
+    var V=invested, ib=invested, divs=0, divTax=0;
+    for(var y=1;y<=N;y++){
+      var d=V*yv, tx=on?d*tr:0, net=d-tx;
+      V=V*(1+g)+net; ib=ib*(1+cpi)+net; divs+=d; divTax+=tx;
+    }
+    var afterSell=V*(1-s.etfSell/100), gain=Math.max(0,afterSell-ib), cgt=on?gain*tr:0, netSale=afterSell-cgt;
+    var cf=[-invested];for(var i=1;i<=N;i++)cf.push(0);cf[N]+=netSale;
+    var total=netSale-invested;
+    return {value:V,divs:divs,divTax:divTax,cgt:cgt,netSale:netSale,total:total,irr:irr(cf),multiple:invested>0?netSale/invested:NaN,on:on};
+  }
+  function renderEtf(c){
+    var e=calcEtf(S,c.invested,c.N), a=calcAu(S,c.invested,c.N);
+    $("tot-etf").textContent=pct((S.etfGrow+S.etfYield-S.etfFee)/100)+" a year";
+    $("etfIntro").textContent="The same "+fmtMoney(c.invested)+" put into an exchange-traded fund for "+c.N+" years. Dividends are taxed each year and reinvested, growth is taxed when you sell, with the CPI allowance on the cost.";
+    var R=function(l,v,cls){return '<tr'+(cls?' class="'+cls+'"':'')+'><td>'+l+'</td><td class="n">'+v+'</td></tr>';};
+    $("etfTbl").innerHTML=R("Money put in",fmtMoney(c.invested))+
+      R("Value after "+c.N+" years, before sale tax",fmtMoney(e.value))+
+      R("Dividends paid out by the fund",fmtMoney(e.divs))+
+      R("Tax on those dividends",e.divTax>0?"-"+fmtMoney(e.divTax):"none")+
+      R("Tax on the sale profit",e.cgt>0?"-"+fmtMoney(e.cgt):"none")+
+      R("Cash back from the sale",fmtMoney(e.netSale))+
+      R("Total profit",fmtMoney(e.total),"tot"+(e.total<0?" neg":""))+
+      R("Average return a year",e.irr===null?"-":pct(e.irr),"tot");
+    var Q=function(l,x,y,z,cls){return '<tr'+(cls?' class="'+cls+'"':'')+'><td>'+l+'</td><td>'+x+'</td><td>'+y+'</td><td>'+z+'</td></tr>';};
+    $("triTbl").innerHTML='<thead><tr><th></th><th>Bali villa</th><th>Aus property</th><th>ETF</th></tr></thead><tbody>'+
+      Q("Money put in",fmtMoney(c.invested),fmtMoney(c.invested),fmtMoney(c.invested))+
+      Q("Cash back from the sale",fmtMoney(c.netSale),fmtMoney(a.netSale),fmtMoney(e.netSale))+
+      Q("Income received, or top-ups paid, along the way",fmtMoney(c.total+c.invested-c.netSale),fmtMoney(a.total+c.invested-a.netSale),"reinvested")+
+      Q("Total profit",fmtMoney(c.total),fmtMoney(a.total),fmtMoney(e.total),"tot")+
+      Q("Average return a year",c.irr===null?"-":pct(c.irr),a.irr===null?"-":pct(a.irr),e.irr===null?"-":pct(e.irr),"tot")+
+      Q("Needs topping up from your pocket",(c.cf.slice(1,c.N).some(function(v){return v<0;}))?"yes":"no",a.cf.slice(1,c.N).some(function(v){return v<0;})?"yes, every year":"no","no")+
+      Q("You can sell part of it","no","no","yes")+'</tbody>';
+    $("etfNote").textContent="Shares go down as well as up. This uses a smooth average, but a real fund can fall 30% or more in a year and take years to recover. The ETF needs no tenants, repairs or builders, and you can sell part of it any day. Dividends here have no franking credits, which would lower the tax on Australian shares.";
   }
 
   /* ---------- scenarios ---------- */
